@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+# Auto-exit tablet mode when laptop usage is detected (proxy for "hinge back").
+# The X30W-J hinge sysfs is stuck at 0 and there is no SW_TABLET_MODE switch,
+# so watch the physical keyboard + touchpad at kernel level instead.
+# Hyprland's device disable is compositor-level — /dev/input still emits.
+# Any deliberate keypress, or sustained touchpad activity, means unfolded.
+import collections
+import os
+import select
+import struct
+import subprocess
+import sys
+import time
+
+HOME = os.path.expanduser("~")
+STATE_FILE = HOME + "/.local/state/omarchy/toggles/hypr/tablet-mode-on"
+MODE_SCRIPT = HOME + "/.config/hypr/scripts/tablet-mode.sh"
+
+EV_KEY, EV_REL, EV_ABS = 1, 2, 3
+EVENT_FMT = "llHHI"
+EVENT_SIZE = struct.calcsize(EVENT_FMT)
+
+GRACE_SECS = 3.0          # ignore folding jostle right after entering tablet
+PAD_EVENTS = 8            # touchpad events ...
+PAD_WINDOW = 3.0          # ... within this window = deliberate use
+POLL_TIMEOUT = 1.0
+
+
+def notify(msg):
+    for cmd in (["omarchy-notification-send", "-u", "low", msg],
+                ["notify-send", msg]):
+        try:
+            subprocess.run(cmd, check=False,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return
+        except FileNotFoundError:
+            continue
+
+
+def find_handler(want):
+    """Resolve /dev/input/eventN for a device name fragment via /proc."""
+    name, handler = "", ""
+    try:
+        with open("/proc/bus/input/devices") as f:
+            for line in f:
+                if line.startswith("N:"):
+                    name = line
+                elif line.startswith("H:"):
+                    if want in name:
+                        for tok in line.split():
+                            if tok.startswith("event"):
+                                return "/dev/input/" + tok
+                    name = ""
+    except OSError:
+        pass
+    return ""
+
+
+def open_nb(path):
+    try:
+        fd = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
+        # Drain anything queued before we started watching.
+        try:
+            while os.read(fd, 4096):
+                pass
+        except (OSError, BlockingIOError):
+            pass
+        return fd
+    except OSError:
+        return -1
+
+
+def read_events(fd):
+    try:
+        data = os.read(fd, EVENT_SIZE * 32)
+    except (OSError, BlockingIOError):
+        return
+    for off in range(0, len(data) - EVENT_SIZE + 1, EVENT_SIZE):
+        _, _, typ, _code, val = struct.unpack(
+            EVENT_FMT, data[off:off + EVENT_SIZE])
+        yield typ, val
+
+
+def main(test_device="", dry_run=False):
+    if test_device:
+        kbd_path, pad_path = test_device, ""
+    else:
+        kbd_link = "/dev/input/by-path/platform-i8042-serio-0-event-kbd"
+        kbd_path = kbd_link if os.path.exists(kbd_link) else find_handler(
+            "AT Translated Set 2 keyboard")
+        pad_path = find_handler("Touchpad")
+
+    kbd = open_nb(kbd_path) if kbd_path else -1
+    pad = open_nb(pad_path) if pad_path and not test_device else -1
+    if kbd < 0 and pad < 0:
+        return 0  # no permission (pre-input-group login?) — manual EXIT stays
+
+    fds = [f for f in (kbd, pad) if f >= 0]
+    pad_hits = collections.deque()
+    # tablet-mode.sh starts us before it writes STATE_FILE — wait for it
+    # instead of exiting instantly on a missing file (race, seen 2026-09-05).
+    for _ in range(50):
+        if os.path.exists(STATE_FILE):
+            break
+        time.sleep(0.2)
+    else:
+        return 0
+    start = time.monotonic()
+
+    while os.path.exists(STATE_FILE):
+        try:
+            r, _, _ = select.select(fds, [], [], POLL_TIMEOUT)
+        except (OSError, ValueError):
+            break
+        now = time.monotonic()
+        if now - start < GRACE_SECS:
+            for fd in r:
+                for _ in read_events(fd):
+                    pass
+            continue
+        for fd in r:
+            for typ, val in read_events(fd):
+                if fd == kbd and typ == EV_KEY and val in (1, 2):
+                    return trigger(dry_run, "keyboard")
+                if fd == pad and typ in (EV_KEY, EV_REL, EV_ABS):
+                    pad_hits.append(now)
+                    while pad_hits and now - pad_hits[0] > PAD_WINDOW:
+                        pad_hits.popleft()
+                    if len(pad_hits) >= PAD_EVENTS:
+                        return trigger(dry_run, "touchpad")
+    return 0
+
+
+def trigger(dry_run, via):
+    if dry_run:
+        print("would-exit-via-" + via)
+        return 0
+    notify("Laptop input detected — leaving tablet mode")
+    subprocess.run([MODE_SCRIPT, "off"], check=False)
+    return 0
+
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    sys.exit(main(test_device=args[args.index("--test-device") + 1]
+             if "--test-device" in args else "",
+             dry_run="--dry-run" in args))

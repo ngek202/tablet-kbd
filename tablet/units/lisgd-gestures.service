@@ -1,0 +1,12 @@
+[Unit]
+Description=Touchscreen gestures (lisgd) for tablet companion
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=%h/.config/hypr/scripts/touch-gestures.sh
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target
