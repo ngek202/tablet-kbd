@@ -26,7 +26,8 @@ EV_ABS, EV_KEY = 3, 1
 ABS_X, ABS_Y = 0x00, 0x01
 BTN_TOUCH = 0x14A
 
-DOUBLE_MS = 400
+DOUBLE_MS = 800  # touch double-taps run slower than mouse clicks;
+# 400ms caught only triple-clicks, 600ms still missed slow pairs.
 RADIUS_UNITS = 450  # ~3% of panel diagonal
 
 
@@ -137,6 +138,16 @@ def warp(sx, sy):
         return False
 
 
+def _osk_open():
+    """True while our board is up (typing context — never warp)."""
+    try:
+        r = subprocess.run(["pgrep", "-f", "[c]ustom-kbd\\.py"],
+                           capture_output=True, timeout=5)
+        return r.returncode == 0
+    except Exception:
+        return False
+
+
 def watch(fd, xmax, ymax):
     x = y = None
     last_t, last_x, last_y = 0.0, 0, 0
@@ -167,6 +178,11 @@ def watch(fd, xmax, ymax):
                 dx, dy = x - last_x, y - last_y
                 if now - last_t < DOUBLE_MS and dx * dx + dy * dy < \
                         RADIUS_UNITS * RADIUS_UNITS:
+                    if _osk_open():
+                        # Typing context (dd/oo/ee double-letters) — never
+                        # yank the cursor to the board mid-word.
+                        last_t = 0.0
+                        continue
                     if time.monotonic() - geo_at > 5:
                         W, H, t = screen_geo()
                         geo_at = time.monotonic()
