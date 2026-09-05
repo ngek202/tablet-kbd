@@ -1,13 +1,14 @@
 #!/bin/bash
 # Touchscreen gestures via lisgd — finger only, tablet companion.
 # Resolves the Wacom finger event node dynamically (event numbers shift across reboots).
-# Gestures: 3-finger L/R = workspace, 4-finger L/R = move window focus
-# (column navigation in scrolling layout, plain focus step otherwise),
-# 1-finger up from the visual bottom edge = OSK, 3-finger up anywhere =
-# OSK toggle (the edge-free dismiss: a full-width OSK covers the bottom
-# edge, so the edge swipe can't reach while open), 4-finger down from the
-# visual top edge = exit tablet mode (replaces the EXIT pill). "Visual"
-# edges follow rotation via -o below.
+# Gestures: 3-finger L/R = workspace, 1-finger up from the visual bottom
+# edge = OSK, 3-finger up anywhere = OSK toggle (the edge-free dismiss:
+# a full-width OSK covers the bottom edge, so the edge swipe can't reach
+# while open), 4-finger down from the visual top edge = exit tablet mode
+# (replaces the EXIT pill). "Visual" edges follow rotation via -o below.
+# NOTE 2026-09-05: 4-finger L/R window focus was tried and reverted —
+# awkward to perform, conflicts with in-app touch (file manager); tap
+# the target window to focus it instead (direct manipulation).
 # Safe no-op if lisgd is not installed yet.
 # NOTE: lisgd reads this file once at startup. After editing, restart it:
 #   pkill -x lisgd && setsid -f ~/.config/hypr/scripts/touch-gestures.sh
@@ -60,8 +61,6 @@ TH_P="${SXMO_LISGD_THRESHOLD_PRESSED:-60}"
 exec lisgd -d "$DEV" -o "${ORIENTATION:-0}" -t "$TH" -T "$TH_P" \
   -g "3,LR,*,*,hyprctl dispatch workspace -1" \
   -g "3,RL,*,*,hyprctl dispatch workspace +1" \
-  -g "4,LR,*,*,hyprctl dispatch movefocus l" \
-  -g "4,RL,*,*,hyprctl dispatch movefocus r" \
   -g "1,DU,B,*,$OSK" \
   -g "3,DU,*,*,$OSK" \
   -g "4,UD,T,*,$TABLET_OFF" >/dev/null 2>&1
