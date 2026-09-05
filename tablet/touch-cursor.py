@@ -151,6 +151,7 @@ def _osk_open():
 def watch(fd, xmax, ymax):
     x = y = None
     last_t, last_x, last_y = 0.0, 0, 0
+    in_contact, contact_pos = False, []
     geo_at = 0.0
     W, H, t = 1536, 864, 0
     while True:
@@ -169,30 +170,56 @@ def watch(fd, xmax, ymax):
                 break
             if typ == EV_ABS and code == ABS_X:
                 x = val
+                if in_contact:
+                    contact_pos.append((val, y))
             elif typ == EV_ABS and code == ABS_Y:
                 y = val
-            elif typ == EV_KEY and code == BTN_TOUCH and val == 1:
-                now = time.monotonic() * 1000
-                if x is None:
-                    continue
-                dx, dy = x - last_x, y - last_y
-                if now - last_t < DOUBLE_MS and dx * dx + dy * dy < \
-                        RADIUS_UNITS * RADIUS_UNITS:
-                    if _osk_open():
-                        # Typing context (dd/oo/ee double-letters) — never
-                        # yank the cursor to the board mid-word.
-                        last_t = 0.0
+                if in_contact and x is not None:
+                    contact_pos.append((x, val))
+            elif typ == EV_KEY and code == BTN_TOUCH:
+                if val == 1 and not in_contact:
+                    in_contact, contact_pos = True, []
+                elif val == 0 and in_contact:
+                    in_contact = False
+                    # Tap point: freshest in-contact position wins (DOWN
+                    # itself carries no coordinates); a perfectly still
+                    # finger emits no ABS during contact, so fall back to
+                    # last-known coords (never drop taps).
+                    if contact_pos:
+                        tx, ty = contact_pos[-1]
+                        tx = tx if tx is not None else x
+                        ty = ty if ty is not None else y
+                    else:
+                        tx, ty = x, y
+                    if tx is None or ty is None:
                         continue
-                    if time.monotonic() - geo_at > 5:
-                        W, H, t = screen_geo()
-                        geo_at = time.monotonic()
-                    sx, sy = to_screen(x, y, xmax, ymax, W, H, t)
-                    ok = warp(sx, sy)
-                    log(f"warp x={x} y={y} -> {int(sx)},{int(sy)} "
-                        f"t={t} ok={ok}")
-                    last_t = 0.0  # need a fresh pair for the next warp
-                else:
-                    last_t, last_x, last_y = now, x, y
+                    now = time.monotonic() * 1000
+                    dx, dy = tx - last_x, ty - last_y
+                    if now - last_t < DOUBLE_MS and \
+                            dx * dx + dy * dy < \
+                            RADIUS_UNITS * RADIUS_UNITS:
+                        if _osk_open():
+                            # Board is up: only skip taps landing ON it
+                            # (typing double-letters). Taps elsewhere warp
+                            # normally — pointer on demand must work with
+                            # the board open (tablet has no touchpad).
+                            if time.monotonic() - geo_at > 5:
+                                W, H, t = screen_geo()
+                                geo_at = time.monotonic()
+                            _sx, _sy = to_screen(tx, ty, xmax, ymax, W, H, t)
+                            if _sy > H - 380:
+                                last_t = 0.0
+                                continue
+                        if time.monotonic() - geo_at > 5:
+                            W, H, t = screen_geo()
+                            geo_at = time.monotonic()
+                        sx, sy = to_screen(tx, ty, xmax, ymax, W, H, t)
+                        ok = warp(sx, sy)
+                        log(f"warp x={tx} y={ty} -> {int(sx)},{int(sy)} "
+                            f"t={t} ok={ok}")
+                        last_t = 0.0
+                    else:
+                        last_t, last_x, last_y = now, tx, ty
 
 
 def main():
