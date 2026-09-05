@@ -88,20 +88,30 @@ def screen_geo():
         for m in json.loads(out):
             if m.get("name") == "eDP-1":
                 s = m.get("scale", 1) or 1
-                return m["width"] / s, m["height"] / s, m.get("transform", 0)
+                t = m.get("transform", 0)
+                w, h = m["width"] / s, m["height"] / s
+                if t in (1, 3):  # portrait: physical dims don't rotate
+                    w, h = h, w
+                return w, h, t
     except Exception:
         pass
     return 1536, 864, 0
 
 
 def to_screen(x, y, xmax, ymax, W, H, t):
+    # Kernel axes are fixed to the panel (+x toward device-right,
+    # +y toward device-bottom). Derived 2026-09-05 from the physical
+    # rotation (NOT guessed): right-up = device CCW, so device-right
+    # points viewer-up and device-bottom points viewer-right.
+    # t1/t3 were swapped in the first version — symptom: cursor lands
+    # mirrored (far window instead of under finger).
     nx, ny = x / xmax, y / ymax
-    if t == 1:
-        return ny * W, H - nx * H
-    if t == 2:
-        return W - nx * W, H - ny * H
-    if t == 3:
+    if t == 1:  # left-up (device CW): +x -> viewer-down, +y -> viewer-left
         return W - ny * W, nx * H
+    if t == 2:  # bottom-up (180, symmetric)
+        return W - nx * W, H - ny * H
+    if t == 3:  # right-up (device CCW): +x -> viewer-up, +y -> viewer-right
+        return ny * W, H - nx * H
     return nx * W, ny * H
 
 
