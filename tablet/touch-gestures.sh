@@ -4,8 +4,12 @@
 # Gestures: 3-finger L/R = workspace, 1-finger up from the visual bottom
 # edge = OSK, 3-finger up anywhere = OSK toggle (the edge-free dismiss:
 # a full-width OSK covers the bottom edge, so the edge swipe can't reach
-# while open), 4-finger down from the visual top edge = exit tablet mode
-# (replaces the EXIT pill). "Visual" edges follow rotation via -o below.
+# while open), 4-finger inward from the visual LEFT edge = exit tablet
+# mode (moved 2026-09-06 off the top edge: swipes originating on the bar
+# dragged through widgets). "Visual" edges follow rotation via -o below.
+# Direction code reads origin-to-travel (DU,B = bottom→up), so left-edge
+# inward is LR,L. This is the emergency exit — it stays no matter what
+# (bar plugin crash, shell death); never remove without a replacement.
 # NOTE 2026-09-05: 4-finger L/R window focus was tried and reverted —
 # awkward to perform, conflicts with in-app touch (file manager); tap
 # the target window to focus it instead (direct manipulation).
@@ -63,4 +67,4 @@ exec lisgd -d "$DEV" -o "${ORIENTATION:-0}" -t "$TH" -T "$TH_P" \
   -g "3,RL,*,*,hyprctl dispatch workspace +1" \
   -g "1,DU,B,*,$OSK" \
   -g "3,DU,*,*,$OSK" \
-  -g "4,UD,T,*,$TABLET_OFF" >/dev/null 2>&1
+  -g "4,LR,L,*,$TABLET_OFF" >/dev/null 2>&1
