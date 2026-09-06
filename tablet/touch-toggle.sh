@@ -5,7 +5,8 @@ set -u
 
 STATE_DIR="$HOME/.local/state/omarchy/toggles/hypr"
 STATE_FILE="$STATE_DIR/touch-off"
-TOUCH="wacom-hid-5272-finger"
+source "$(dirname "${BASH_SOURCE[0]}")/tablet-devices.sh"
+TOUCH="$TABLET_FINGER"
 
 notify() {
   omarchy-notification-send -u low "$1" 2>/dev/null || notify-send "$1" 2>/dev/null || true

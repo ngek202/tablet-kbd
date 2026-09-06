@@ -1,9 +1,9 @@
 #!/bin/bash
-# Tablet mode for Portege X30W-J — finger touch only (pen deferred).
-# on:  internal keyboard + touchpad off, finger stays on, follow_mouse=2, Squeekboard started
-# off: everything restored, Squeekboard stopped
-# Touch exit is a 4-finger swipe down from the top edge (lisgd, see
-# touch-gestures.sh). tablet-exit.py remains as a manual fallback pill.
+# Tablet mode — finger touch only (pen deferred).
+# on:  internal keyboard + touchpad off, finger stays on, follow_mouse=2, OSK started
+# off: everything restored, OSK stopped
+# Touch exit is a 4-finger swipe inward from the left visual edge (lisgd,
+# see touch-gestures.sh). tablet-exit.py remains as a manual fallback pill.
 #
 # Hardening (2026-09-05 touchpad incident): no silent hyprctl failures.
 # Every eval is exit-checked; failures notify loudly and mode_off falls
@@ -13,9 +13,13 @@ set -u
 
 STATE_DIR="$HOME/.local/state/omarchy/toggles/hypr"
 STATE_FILE="$STATE_DIR/tablet-mode-on"
-KBD="at-translated-set-2-keyboard"
-PAD="3030303142534f54:00-06cb:cddd-touchpad"
-FINGER="wacom-hid-5272-finger"
+
+# Device detection (single source of truth; resolves the instance sig for
+# daemon contexts too). User overrides live in tablet-devices.conf.
+source "$(dirname "${BASH_SOURCE[0]}")/tablet-devices.sh"
+KBD="$TABLET_KBD"
+PAD="$TABLET_PAD"
+FINGER="$TABLET_FINGER"
 
 # hyprctl needs the instance signature. Interactive shells usually have it,
 # but gesture/daemon contexts (lisgd, systemd) may not — resolve it like
@@ -50,6 +54,8 @@ ev() {
 }
 
 dev_set() {
+  # Empty name = device absent (e.g. pad-less convertible): skip cleanly.
+  [[ -n ${1:-} ]] || return 0
   ev "device $1 enabled=$2" "hl.device({ name = \"$1\", enabled = $2 })"
 }
 
@@ -78,6 +84,10 @@ osk_stop() {
 
 mode_on() {
   FAILED=0
+  if [[ -z $FINGER ]]; then
+    alert "Tablet mode: no touch device detected (see tablet-devices.conf to pin one)"
+    return 1
+  fi
   mkdir -p "$STATE_DIR"
   # Quiescence first (2026-09-06): disabling between a press and its
   # release strands the key (release never lands; Hyprland's repeat
@@ -93,7 +103,7 @@ mode_on() {
   else
     : >"$STATE_FILE"
     osk_start
-    notify "Tablet mode on — 4-finger swipe down from top to exit"
+    notify "Tablet mode on — 4-finger swipe inward from left edge to exit"
   fi
   return $FAILED
 }

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Custom keyboard toggle — same CLI as squeekboard-toggle.sh
+# SAM OSK toggle — same CLI as squeekboard-toggle.sh
 # (toggle/show/hide/status) so gestures, SUPER+B and tablet-mode
 # plug in unchanged at swap time (Phase 3). Phase 1: standalone,
 # not yet wired — interim OSK stays Squeekboard.

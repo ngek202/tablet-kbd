@@ -1,21 +1,20 @@
 #!/bin/bash
-# Auto-rotate eDP-1 + finger touch together from the accelerometer.
-# Tablet-only build: pen deferred until pen returns.
+# Auto-rotate the internal display + finger touch together from the
+# accelerometer. Tablet-only build: pen deferred until pen returns.
 # Reads orientation lines from monitor-sensor (iio-sensor-proxy).
 # Mapping (verified by finger-tap test, adjust if taps land rotated):
 #   normal=0, left-up=1, bottom-up=2, right-up=3
 set -u
 
-MONITOR="eDP-1"
-FINGER="wacom-hid-5272-finger"
+# Device detection (single source of truth). Keep the lazy resolve_sig:
+# at boot this service can start before Hyprland creates its socket, and
+# a once-at-startup resolution then stays broken until manual restart
+# (seen 2026-09-05: post-reboot applies all failed with "not set!").
+source "$(dirname "${BASH_SOURCE[0]}")/tablet-devices.sh"
+MONITOR="$TABLET_OUTPUT"
+FINGER="$TABLET_FINGER"
 LOG="$HOME/.local/state/omarchy/auto-rotate.log"
 
-# hyprctl needs the instance signature. Resolve it LAZILY on every apply:
-# at boot this service can start before Hyprland creates its socket, and a
-# once-at-startup resolution then stays broken until manual restart (seen
-# 2026-09-05: post-reboot applies all failed with "not set!"). resolve_sig
-# is cheap (one ls) and re-runs whenever the var is empty; apply() retries
-# once after re-resolving if hyprctl reports a stale/missing signature.
 resolve_sig() {
   [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]] && return 0
   local sig_dir="/run/user/$(id -u)/hypr" newest=""
@@ -23,6 +22,13 @@ resolve_sig() {
     newest=$(ls -t "$sig_dir" 2>/dev/null | head -n 1)
   fi
   [[ -n $newest ]] && export HYPRLAND_INSTANCE_SIGNATURE="$newest"
+  # Socket just became reachable? Detection at source time may have run
+  # too early — re-detect now that hyprctl works (boot-race lesson).
+  if [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} && -z $TABLET_FINGER ]]; then
+    tablet_detect
+    MONITOR="$TABLET_OUTPUT"
+    FINGER="$TABLET_FINGER"
+  fi
   [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]]
 }
 

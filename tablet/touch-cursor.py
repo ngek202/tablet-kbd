@@ -54,6 +54,8 @@ def resolve_sig():
 
 
 def find_finger():
+    """First touch-digitizer event node. Generic: any kernel name with
+    Finger/Touchscreen, excluding touchpads (names vary per convertible)."""
     name = ""
     try:
         with open("/proc/bus/input/devices") as f:
@@ -61,7 +63,8 @@ def find_finger():
                 if line.startswith("N:"):
                     name = line
                 elif line.startswith("H:"):
-                    if "Wacom HID 5272 Finger" in name:
+                    low = name.lower()
+                    if ("finger" in low or "touchscreen" in low) and "touchpad" not in low:
                         m = re.search(r"event\d+", line)
                         if m:
                             return "/dev/input/" + m.group(0)
@@ -79,15 +82,16 @@ def abs_range(fd, axis):
 
 
 def screen_geo():
-    """(LOGICAL W, H, transform) for eDP-1. monitors -j reports physical
-    mode size — divide by scale (cursor.move + cursorpos live in logical
-    space; seen 2026-09-05: asking x=1900 clamps at 1535=1920/1.25)."""
+    """(LOGICAL W, H, transform) for the internal display. monitors -j
+    reports physical mode size — divide by scale (cursor.move + cursorpos
+    live in logical space; seen 2026-09-05: asking x=1900 clamps at
+    1535=1920/1.25). Internal display = first name starting with eDP."""
     try:
         out = subprocess.run(["hyprctl", "monitors", "-j"],
                              capture_output=True, text=True,
                              timeout=5).stdout
         for m in json.loads(out):
-            if m.get("name") == "eDP-1":
+            if str(m.get("name", "")).startswith("eDP"):
                 s = m.get("scale", 1) or 1
                 t = m.get("transform", 0)
                 w, h = m["width"] / s, m["height"] / s

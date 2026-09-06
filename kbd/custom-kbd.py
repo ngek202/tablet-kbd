@@ -47,7 +47,7 @@ import json
 import os
 
 APP_ID = "custom.kbd"
-TITLE = "custom-kbd"
+TITLE = "SAM OSK"
 HEIGHT = 340
 
 LAYOUT_DIR = os.path.expanduser("~/.config/hypr/kbd-layouts")

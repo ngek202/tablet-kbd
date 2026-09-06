@@ -27,12 +27,32 @@ do
   end
 end
 
--- Finger touch follows the internal display.
-hl.device({
-  name = "wacom-hid-5272-finger",
-  output = "eDP-1",
-  enabled = true,
-})
+-- Finger touch follows the internal display. Device names are detected,
+-- not hardcoded (convertibles differ): the installer generates
+-- tablet-devices.lua from the same detection the shell scripts use; the
+-- io.popen fallback covers a missing file.
+local ok, devs = pcall(dofile, (os.getenv("HOME") or "") .. "/.config/hypr/tablet-devices.lua")
+if not ok or type(devs) ~= "table" or not (devs.finger and #devs.finger > 0) then
+  devs = nil
+  local h = io.popen("hyprctl -j devices 2>/dev/null")
+  if h then
+    local j = h:read("*a") or ""
+    h:close()
+    local finger = j:match('"touch"%s*:%s*%[.-"name"%s*:%s*"([^"]+)"')
+    local h2 = io.popen("hyprctl -j monitors 2>/dev/null")
+    local out = ""
+    if h2 then out = h2:read("*a") or "" h2:close() end
+    devs = { finger = finger, output = out:match('"name"%s*:%s*"(eDP[^"]+)"') }
+  end
+end
+
+if devs and devs.finger and #devs.finger > 0 then
+  hl.device({
+    name = devs.finger,
+    output = devs.output,
+    enabled = true,
+  })
+end
 
 -- wvkbd stays out of the way until summoned (squeekboard rule kept: fallback).
 o.window({ class = "wvkbd-mobintl" }, { float = true, no_initial_focus = true })
@@ -41,5 +61,5 @@ o.window({ class = "squeekboard" }, { float = true, no_initial_focus = true })
 -- Touch EXIT overlay never steals focus.
 o.window({ title = "tablet-exit" }, { float = true, no_focus = true, no_initial_focus = true })
 
--- Custom keyboard prototype (Phase 1): never steals focus.
-o.window({ title = "custom-kbd" }, { float = true, no_focus = true, no_initial_focus = true })
+-- SAM OSK never steals focus (title pairs with custom-kbd.py TITLE).
+o.window({ title = "SAM OSK" }, { float = true, no_focus = true, no_initial_focus = true })

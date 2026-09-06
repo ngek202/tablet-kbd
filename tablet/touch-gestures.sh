@@ -1,6 +1,7 @@
 #!/bin/bash
 # Touchscreen gestures via lisgd — finger only, tablet companion.
-# Resolves the Wacom finger event node dynamically (event numbers shift across reboots).
+# Resolves the finger event node dynamically (event numbers shift across
+# reboots; device names vary per convertible — see tablet-devices.sh).
 # Gestures: 3-finger L/R = workspace, 1-finger up from the visual bottom
 # edge = OSK, 3-finger up anywhere = OSK toggle (the edge-free dismiss:
 # a full-width OSK covers the bottom edge, so the edge swipe can't reach
@@ -24,18 +25,21 @@ command -v lisgd >/dev/null 2>&1 || exit 0
 # kills a working daemon (seen 2026-09-05: don't murder the old mapping
 # when the finger node is momentarily unreadable).
 
-# Find event node for "Wacom HID 5272 Finger" via /proc/bus/input/devices.
+# Find the finger event node via /proc/bus/input/devices, matching the
+# detected kernel-name pattern (tablet-devices.sh; generic, not model-bound).
+source "$(dirname "${BASH_SOURCE[0]}")/tablet-devices.sh"
 EVENT=""
 name=""
 while IFS= read -r line; do
   case "$line" in
     N:*Name=*) name="$line" ;;
     H:*Handlers=*)
-      case "$name" in
-        *"Wacom HID 5272 Finger"*)
-          EVENT=$(echo "$line" | grep -o 'event[0-9]*' | head -n 1)
-          ;;
-      esac
+      # Case-insensitive match: kernel names capitalize ("Finger"),
+      # the detected pattern is lowercase.
+      low=${name,,}
+      if [[ $low =~ ($TABLET_FINGER_KERNEL) ]] && [[ ! $low =~ touchpad ]]; then
+        EVENT=$(echo "$line" | grep -o 'event[0-9]*' | head -n 1)
+      fi
       name=""
       ;;
   esac
