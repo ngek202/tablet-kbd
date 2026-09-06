@@ -33,7 +33,7 @@ Verification (hands-on):
 7. Push repo commits (16 unpushed as of 2026-09-06)
 
 External (user):
-8. 1.5x preset desktop cross-check (resolved locally as 1.6x)
+8. DONE 2026-09-06: 1.5x preset cross-check — 1.6x confirmed as the default preset
 
 > Machine: Dynabook Portege X30W-J, Omarchy 4.0.2 / Hyprland 0.56.2 (Lua).
 > Status: Phase 1 DONE + hardened, Phase 2 code done (portrait gate open),
