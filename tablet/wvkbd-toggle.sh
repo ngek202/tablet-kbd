@@ -14,8 +14,7 @@ do_show() {
   if ! is_running; then
     # shellcheck disable=SC2086
     uwsm-app -- $BIN $ARGS >/dev/null 2>&1 &
-    local i
-    for i in $(seq 1 50); do
+    for _ in $(seq 1 50); do
       is_running && break
       sleep 0.1
     done

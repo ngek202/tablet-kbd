@@ -70,6 +70,7 @@ tablet_detect() {
   # User overrides always win (pin names on unusual hardware). Re-applied
   # on every detect so lazy re-detection never clobbers a pinned name.
   local _override="$HOME/.config/hypr/tablet-devices.conf"
+  # shellcheck source=/dev/null  # path is dynamic by design
   [[ -f $_override ]] && source "$_override"
 
   export TABLET_FINGER TABLET_FINGER_KERNEL TABLET_KBD TABLET_PAD TABLET_OUTPUT

@@ -17,7 +17,10 @@ ok()   { echo "OK: $1"; }
 skip() { echo "SKIP: $1"; }
 
 bak() {
-  local f="$1" b="$1.bak.$(date +%s)"
+  local f
+  local b
+  f="$1"
+  b="$1.bak.$(date +%s)"
   cp "$f" "$b" && echo "backup: $b"
 }
 

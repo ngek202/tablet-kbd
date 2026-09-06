@@ -24,8 +24,7 @@ set_visible() {
 }
 
 wait_for_bus() {
-  local i
-  for i in $(seq 1 50); do
+  for _ in $(seq 1 50); do
     busctl --user list 2>/dev/null | grep -q "$BUS" && return 0
     sleep 0.1
   done

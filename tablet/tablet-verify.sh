@@ -6,7 +6,6 @@
 set -u
 
 HYPR="$HOME/.config/hypr"
-HOOK_MODE="${TABLET_VERIFY_HOOK:-0}"
 FAIL=0
 
 pass() { echo "PASS: $1"; }

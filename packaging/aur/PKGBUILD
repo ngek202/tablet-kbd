@@ -1,3 +1,7 @@
+# shellcheck shell=bash
+
+# PKGBUILD variables are consumed by makepkg, not bash:
+# shellcheck disable=SC2034,SC2154
 # Maintainer: ngek202 <ngek202@gmail.com>
 # Upstream: https://github.com/ngek202/tablet-kbd
 #
@@ -42,7 +46,7 @@ source=("${pkgname}::git+${url}.git")
 sha256sums=('SKIP')
 
 pkgver() {
-  cd "${srcdir}/${pkgname}"
+  cd "${srcdir}/${pkgname}" || exit 1
   if git describe --tags >/dev/null 2>&1; then
     git describe --long --tags | sed 's/^v//; s/-\([^-]*\)-g\([0-9a-f]*\)$/-r\1.\2/'
   else

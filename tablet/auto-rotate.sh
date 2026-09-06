@@ -17,7 +17,10 @@ LOG="$HOME/.local/state/omarchy/auto-rotate.log"
 
 resolve_sig() {
   [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]] && return 0
-  local sig_dir="/run/user/$(id -u)/hypr" newest=""
+  local sig_dir
+  local newest
+  sig_dir="/run/user/$(id -u)/hypr"
+  newest=""
   if [[ -d $sig_dir ]]; then
     newest=$(ls -t "$sig_dir" 2>/dev/null | head -n 1)
   fi
