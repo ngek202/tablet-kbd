@@ -1,19 +1,36 @@
 # Custom Keyboard Master Plan — "Squeekboard-simple, our engine"
 
-## REMAINING (as of 2026-09-06 — remind on return)
+## REMAINING (as of 2026-09-06 — fire order ACBD locked)
 
-Builds (approved, awaiting go):
+Builds (in order):
+A. DONE 2026-09-06: decisions recorded (two-repo, v0.2 scope, precedent)
+C. `tablet-toggle` repo (seed from `plugins/tablet-toggle/` mirror;
+   README links package repo with installer-in-progress note)
+B. Phase 4 share package (installer + docs + install one-liner;
+   links real toggle repo URL; retire Squeekboard/wvkbd)
+D. Plugin v0.2 (gated on B's install one-liner)
+
 1. DONE 2026-09-06: Verify-only resilience script (`tablet-verify.sh` +
    report-only `post-update.d` hook + `--fix`) — green/red paths tested
 2. Modifier-keys spike (do virtual Super/Alt/Ctrl work at all?)
 3. DONE 2026-09-06: Bar toggle plugin G (manifest + QML + state bridging;
    B stays) — live-enabled, touch-verified hands-on
-4. Phase 4 share package (installer + docs; retire Squeekboard/wvkbd)
+ 4. Phase 4 share package (installer + docs; retire Squeekboard/wvkbd)
+
+Parked (deliberate, with triggers):
+- Modifier-keys spike — deferred; revisit only on real post-share demand
+  (a user naming a tablet workflow blocked without Super/Alt/Ctrl).
+  Note: app launching already touch-covered (top-bar Super button),
+  text entry covered (Shift-via-keysyms), nav covered (touch) —
+  virtual modifiers would only add stuck-key surface.
+- README polish + repo titles/descriptions — post-polish.
+- Touch long-press menu opener — CLOSED (not parked): inner MouseArea
+  grabs unstealable from plugin scope + finger drift on small slot.
 
 Verification (hands-on):
 5. Tablet enter/exit ×3 completion
 6. Left-up / bottom-up swipe calibration
-7. Push 4 unpushed repo commits
+7. Push repo commits (16 unpushed as of 2026-09-06)
 
 External (user):
 8. 1.5x preset desktop cross-check (resolved locally as 1.6x)
@@ -126,6 +143,14 @@ units, or config files.
   `omarchy plugin enable <id> --section right` for non-interactive) —
   installer MUST NOT hand-edit shell.json or ask placement itself
   (decided 2026-09-06; `omarchy plugin validate` passes, exit 0).
+- **Two repos** (locked 2026-09-06, fire order ACBD): `tablet-kbd`
+  (package: engine, layouts, dispatcher, tablet wiring, installer,
+  verify) + `tablet-toggle` (plugin: manifest + QML at repo root, own
+  README). Rationale: `plugin add` clones into `plugins/<id>/` and
+  requires `manifest.json` at root (verified against argus layout) —
+  a monorepo would misfire. Plugin README requires the package +
+  links its installer; package README links the companion.
+  Local dev layout unchanged (live dirs canonical, mirrors outward).
 - **Hook** (ships inside the package): verify script installed to
   `post-update.d/` by the installer.
 - Rationale: refresh-hyprland overwrites 7 owned lua files (seen
@@ -133,6 +158,24 @@ units, or config files.
   never lists. Update survival: plugin + package + hook all persist
   (user dirs); only the hyprland.lua `require` line + owned-file
   content is at risk, covered by verify.
+
+## Plugin v0.2 (scoped 2026-09-06, gated on Phase B install one-liner)
+
+- **Guarded tap:** probe detects tablet-mode + OSK presence on tap.
+  Ready → toggle as today. Missing → no toggle attempt (no silent
+  detached failure, no lying highlight): dimmed icon + honest tooltip,
+  tap opens menu with matching Install row(s). OSK-missing-only →
+  toggle allowed, reminder via tooltip + row.
+- **Conditional install hub:** Install rows render only when pieces
+  are absent (engine/layouts → OSK row; tablet-mode.sh/units →
+  tablet row; both → both or one combined — build-time detail).
+  Each row launches the Phase B installer visibly in a floating
+  terminal on explicit tap. Plugin owns/manages/updates nothing.
+- **Precedent (allowed):** argus renders "MangoHud is not installed —
+  ... sudo pacman -S mangohud" (dependency reminders are ecosystem
+  practice); Process/bar.run are first-class; validate is schema-only.
+  Line not crossed: installs stay user-invoked + terminal-visible,
+  never silent background exec.
 
 ## Open threads (parked, not forgotten)
 
