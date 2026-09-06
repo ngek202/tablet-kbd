@@ -170,6 +170,17 @@ units, or config files.
   Phase 4 package shape). Rule: live `~/.config` canonical until the
   Phase 4 installer lands; every change set mirrored here + committed.
   Remote: `github.com/ngek202/tablet-kbd` (private, pushed 2026-09-05).
+- Verification 2026-09-06: SUPER+B user-tested OK. Double-tap warp +
+  focus-follows verified OK. Open: tablet enter/exit ×3, left-up /
+  bottom-up swipes, reboot persistence test.
+- Strand saga closed 2026-09-06: press-across-disable strands any key
+  (repeat timer); fixed by entry quiescence wait (`tablet-modwait.py`);
+  virtual-modifier reset tried and reverted (stranded Super itself);
+  exit policy = 4-finger swipe only. Verified hands-on.
+- 2026-09-06: checked upstream (OpenClaw app, vi, test cleanup, Brave
+  profiles — nothing tablet-related) and `omarchy update available`
+  reports up to date (4.0.2-1). No update to test; pre-update snapshot
+  `tablet-preupdate-20260906-073932.tgz` taken anyway.
 - Double-tap warps cursor: kernel BTN_TOUCH pairs → native
   `hl.dsp.cursor.move({x,y})` in logical coords (uinput REL proven
   ignored by stack; physical-vs-logical trap found by probe).
