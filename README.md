@@ -57,8 +57,8 @@ remain selectable via `OSK_BACKEND`; SAM OSK is pinned as default.
   scroll window-pages instead.
 - **Gestures (finger):** 3-finger left/right = scroll to the previous/
   next window-page (scrolling layout; works in all modes — in laptop
-  mode too). Swipe up from the bottom edge = SAM OSK; 3-finger up =
-  from the bottom edge = summon SAM OSK; 3-finger up anywhere = toggle it.
+  mode too). Swipe up from the bottom edge = summon SAM OSK; 3-finger
+  up anywhere = toggle it.
 - **Pen users:** `touch-toggle.sh off` disables finger touch for palm
   rejection (pen keeps working); `on` restores it.
 - **Other keyboards:** set `OSK_BACKEND=squeekboard` (or `wvkbd`) in the
