@@ -36,7 +36,7 @@ BarWidget {
   function toggle() {
     if (!root.bar) return
     // Guarded tap (v0.2): no tablet stack, no toggle attempt — open the
-    // menu with Install rows instead. Never a silent detached failure.
+    // health check instead. Never a silent detached failure.
     if (!root.tabletPresent) {
       root.checkHealth()
       return
@@ -53,7 +53,7 @@ BarWidget {
 
   function tooltipText() {
     if (!root.tabletPresent) return "Tablet package not installed — right-click for health check"
-    if (!root.oskPresent) return root.tabletOn ? "Tablet mode on (OSK missing — right-click to install)" : "Tablet mode off (OSK missing — right-click to install)"
+    if (!root.oskPresent) return root.tabletOn ? "Tablet mode on (OSK missing — right-click to check)" : "Tablet mode off (OSK missing — right-click to check)"
     if (!root.available) return "Tablet Toggle (tablet-mode.sh not found — install package)"
     return root.tabletOn ? "Tablet mode on — click to exit" : "Tablet mode off — click to enter"
   }
@@ -126,9 +126,9 @@ BarWidget {
     active: root.tabletOn && root.available
     opacity: root.available ? 1.0 : 0.4
     tooltipText: root.tooltipText()
-    // Click routing lives here. A touch long-press opener was tried
-    // twice (TapHandler steal, overlay pressAndHold) — both starved.
-    // Right-click only; touch users get verify via the post-update
+    // Click routing lives here. Touch long-press menu openers were tried
+    // twice and closed as not-viable; right-click launches the health
+    // check directly. Touch users get verify via the post-update
     // notification → terminal path.
     onPressed: function(b) {
       if (b === Qt.RightButton) {
