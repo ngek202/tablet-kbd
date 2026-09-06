@@ -56,17 +56,16 @@ dev_set() {
 osk_start() {
   # Phase 3: backend-agnostic (osk-toggle.sh dispatches to custom /
   # squeekboard / wvkbd). Summon-on-demand: the custom board has no hidden
-  # mode, so enter only clears leftovers instead of pre-starting. Start the
-  # kernel-level auto-exit watcher (self-exits when STATE_FILE goes away).
+  # mode, so enter only clears leftovers instead of pre-starting.
+  # EXIT POLICY (2026-09-06, user decision): tablet mode exits ONLY via
+  # the deliberate 4-finger swipe (or SUPER+SHIFT+T with a live
+  # keyboard). No automatic exit on input — the kernel-level watcher
+  # fired on folding jostle and stranded modifiers. tablet-auto-exit.py
+  # stays in tree, unwired.
   pkill -x squeekboard 2>/dev/null || true
   pkill -x wvkbd-mobintl 2>/dev/null || true
   pkill -f "[c]ustom-kbd\\.py" 2>/dev/null || true
   rm -f "$STATE_DIR/wvkbd-visible"
-  if [[ -x $HOME/.config/hypr/scripts/tablet-auto-exit.py ]] && \
-     ! pgrep -f "[t]ablet-auto-exit\\.py" >/dev/null 2>&1; then
-    setsid -f python3 "$HOME/.config/hypr/scripts/tablet-auto-exit.py" \
-      >/dev/null 2>&1 &
-  fi
 }
 
 osk_stop() {
