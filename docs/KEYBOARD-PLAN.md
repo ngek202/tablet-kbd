@@ -6,8 +6,7 @@ Builds (approved, awaiting go):
 1. Verify-only resilience script (`tablet-verify.sh` + report-only
    `post-update.d` entry + `--fix`)
 2. Modifier-keys spike (do virtual Super/Alt/Ctrl work at all?)
-3. DONE 2026-09-06: Bar toggle plugin G (manifest + QML + state bridging;
-   B stays) — live-enabled, touch-verified hands-on
+3. Bar toggle plugin G (manifest + QML + state bridging; B stays)
 4. Phase 4 share package (installer + docs; retire Squeekboard/wvkbd)
 
 Verification (hands-on):
@@ -121,7 +120,11 @@ units, or config files.
   install script (deps, enablement, hypr wiring blocks) + verify
   script + recipe docs.
 - **Plugin** (optional companion): tablet toggle bar-widget only.
-  Depends on the package, never the reverse.
+  Depends on the package, never the reverse. Placement via platform
+  flow (`omarchy plugin add <url>` prompts for the bar slot;
+  `omarchy plugin enable <id> --section right` for non-interactive) —
+  installer MUST NOT hand-edit shell.json or ask placement itself
+  (decided 2026-09-06; `omarchy plugin validate` passes, exit 0).
 - **Hook** (ships inside the package): verify script installed to
   `post-update.d/` by the installer.
 - Rationale: refresh-hyprland overwrites 7 owned lua files (seen
@@ -207,17 +210,6 @@ units, or config files.
   sublabels), `(`/`)` replaced by `[`/`]` (`{`/`}` shifted), full
   shifted faces on latch/Caps (letters swap case, symbols swap
   main/hint), ⇄ added to symbols row. Snapshots `tablet-customkbd-*`.
-- Plugin G built 2026-09-06: `plugin/manifest.json` + `plugin/BarWidget.qml`
-  (`io.github.ngek202.tablet-toggle`, polls `tablet-mode.sh status` every
-  2s, click toggles, B untouched). Manifest validates, status poll verified
-  (`off`/exit 0). Pending: live enable + touch test.
-- Plugin G enabled live 2026-09-06: copied to
-  `~/.config/omarchy/plugins/io.github.ngek202.tablet-toggle/`,
-  `omarchy plugin enable --section right`, shell restarted clean (no QML
-  errors in journal). Pending: touch-test bar toggle on/off + state highlight.
-- Plugin G touch-verified 2026-09-06: bar toggle enters/exits tablet mode,
-  highlight follows state, SUPER+B untouched, bare `a` lowercase (no stranded
-  modifiers). Item 3 closed.
 
 ## Backups
 
