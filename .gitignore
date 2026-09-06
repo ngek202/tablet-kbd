@@ -5,3 +5,4 @@ __pycache__/
 packaging/aur/src/
 packaging/aur/*.pkg.tar.zst
 packaging/aur/pkg/
+packaging/aur/tablet-kbd-git/
