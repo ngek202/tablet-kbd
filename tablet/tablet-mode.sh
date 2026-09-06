@@ -79,6 +79,11 @@ osk_stop() {
 mode_on() {
   FAILED=0
   mkdir -p "$STATE_DIR"
+  # Quiescence first (2026-09-06): disabling between a press and its
+  # release strands the key (release never lands; Hyprland's repeat
+  # timer fires it forever — seen with a quick Enter tap and with
+  # SUPER+SHIFT+T). Wait up to ~2s for all keys released. Best-effort.
+  python3 "$HOME/.config/hypr/scripts/tablet-modwait.py" >/dev/null 2>&1 || true
   dev_set "$KBD" false
   dev_set "$PAD" false
   ev "finger on" "hl.device({ name = \"$FINGER\", enabled = true })"
