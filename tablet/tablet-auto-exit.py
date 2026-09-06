@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 # Auto-exit tablet mode when laptop usage is detected (proxy for "hinge back").
 # The X30W-J hinge sysfs is stuck at 0 and there is no SW_TABLET_MODE switch,
-# so watch the physical keyboard + touchpad at kernel level instead.
+# so watch the physical keyboard at kernel level instead.
+# KEYBOARD ONLY (2026-09-06): touchpad scrolling in tablet mode is
+# legitimate use at tent angles (pad stays alive there), so pad activity
+# must never exit tablet mode — it did, twice. A real keypress means
+# unfolded hands, unambiguously.
 # Hyprland's device disable is compositor-level — /dev/input still emits.
-# Any deliberate keypress, or sustained touchpad activity, means unfolded.
-import collections
+# Any deliberate keypress means unfolded hands, unambiguously.
 import os
+import re
 import select
 import struct
 import subprocess
@@ -21,8 +25,6 @@ EVENT_FMT = "llHHI"
 EVENT_SIZE = struct.calcsize(EVENT_FMT)
 
 GRACE_SECS = 3.0          # ignore folding jostle right after entering tablet
-PAD_EVENTS = 8            # touchpad events ...
-PAD_WINDOW = 3.0          # ... within this window = deliberate use
 POLL_TIMEOUT = 1.0
 
 
@@ -47,9 +49,9 @@ def find_handler(want):
                     name = line
                 elif line.startswith("H:"):
                     if want in name:
-                        for tok in line.split():
-                            if tok.startswith("event"):
-                                return "/dev/input/" + tok
+                        m = re.search(r"event\d+", line)
+                        if m:
+                            return "/dev/input/" + m.group(0)
                     name = ""
     except OSError:
         pass
@@ -83,20 +85,17 @@ def read_events(fd):
 
 def main(test_device="", dry_run=False):
     if test_device:
-        kbd_path, pad_path = test_device, ""
+        kbd_path = test_device
     else:
         kbd_link = "/dev/input/by-path/platform-i8042-serio-0-event-kbd"
         kbd_path = kbd_link if os.path.exists(kbd_link) else find_handler(
             "AT Translated Set 2 keyboard")
-        pad_path = find_handler("Touchpad")
 
     kbd = open_nb(kbd_path) if kbd_path else -1
-    pad = open_nb(pad_path) if pad_path and not test_device else -1
-    if kbd < 0 and pad < 0:
+    if kbd < 0:
         return 0  # no permission (pre-input-group login?) — manual EXIT stays
 
-    fds = [f for f in (kbd, pad) if f >= 0]
-    pad_hits = collections.deque()
+    fds = [kbd]
     # tablet-mode.sh starts us before it writes STATE_FILE — wait for it
     # instead of exiting instantly on a missing file (race, seen 2026-09-05).
     for _ in range(50):
@@ -120,14 +119,8 @@ def main(test_device="", dry_run=False):
             continue
         for fd in r:
             for typ, val in read_events(fd):
-                if fd == kbd and typ == EV_KEY and val in (1, 2):
+                if typ == EV_KEY and val in (1, 2):
                     return trigger(dry_run, "keyboard")
-                if fd == pad and typ in (EV_KEY, EV_REL, EV_ABS):
-                    pad_hits.append(now)
-                    while pad_hits and now - pad_hits[0] > PAD_WINDOW:
-                        pad_hits.popleft()
-                    if len(pad_hits) >= PAD_EVENTS:
-                        return trigger(dry_run, "touchpad")
     return 0
 
 
