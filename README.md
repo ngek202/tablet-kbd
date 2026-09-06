@@ -104,6 +104,13 @@ The installer also ships a report-only `post-update.d` hook that notifies
 
 ## Restore / safety
 
-- Config regression: `tar -xzf ~/backups/<step>.tgz -C ~`, then
+- The installer backs up anything it replaces (`.bak.<ts>` beside the
+  file). To undo a specific file: copy the `.bak` back, then
   `hyprctl reload` (+ `systemctl --user restart` for services).
-- Never `rm -rf`; per-file `.bak.<ts>` before edits.
+- Owned-file wiring is additive only; your own Hyprland content is
+  never rewritten.
+- To remove the stack: disable the three units
+  (`systemctl --user disable --now auto-rotate lisgd-gestures
+  touch-cursor`), delete the `hypr.tablet` require line and the added
+  binds, and set `OSK_BACKEND=squeekboard` (or remove the keybind) —
+  or just switch `OSK_BACKEND` and keep it around as a fallback.
