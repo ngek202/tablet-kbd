@@ -60,6 +60,7 @@
 | 2026-09-06 ~09:55 | Tablet exit moved off the top edge: swipes originating on the bar dragged through widgets. Now 4-finger inward from visual LEFT edge (`4,LR,L`, rotation via `-o`). This binding is the permanent emergency exit — stays regardless of bar plugin. Pending swipe calibration | `scripts/touch-gestures.sh` | `tablet-gesture-leftedge-*` (pre: `.bak.20260906-094352`) | Daemon live with new binding, single instance |
 | 2026-09-05 ~22:35 | Portrait cursor calibration: corner-tap math exposed swapped t1/t3 arms (were mirror images) + physical-dims trap (monitors -j never rotates W/H — swap when t in 1,3). Fixed, verified numerically exact on live taps | `scripts/touch-cursor.py` | `tablet-touchcursor-calib-*` | Awaiting final under-finger confirmation |
 | 2026-09-05 ~21:00 | REVERTED the 4-finger focus gestures: awkward to perform, conflicts with in-app touch (file manager). Tap-to-focus already works (verified healthy: `follow_mouse=1`, `focus_on_activate=true`, `no_focus` only on overlays) — direct manipulation wins. Committed `80250e2` | `scripts/touch-gestures.sh` | `tablet-gesture-tapfocus-*` (pre: `.bak.20260905-205838`) | Single daemon, movefocus bindings gone, service active |
+| 2026-09-06 ~10:40 | Bar toggle plugin G live: `manifest.json` + `BarWidget.qml` (`io.github.ngek202.tablet-toggle`, polls `tablet-mode.sh status` 2s, click toggles, B untouched) copied to `~/.config/omarchy/plugins/`, enabled `--section right` (2nd slot after tray), shell restarted clean. Touch-verified: enter/exit + state highlight, SUPER+B untouched, bare `a` lowercase. Repo `plugin/` + plan updated, committed `85d4631` | `omarchy/plugins/io.github.ngek202.tablet-toggle/{manifest.json,BarWidget.qml}`, `omarchy/shell.json` (bar layout) | `tablet-pluging-20260906-104101.tgz` (sha `e38bae98…57a158`) | validate exit 0, no QML errors in journal, user-confirmed perfect |
 
 ## Keybindings
 
@@ -83,6 +84,7 @@
 | `~/.config/hypr/scripts/tablet-exit.py` | Layer-shell touch EXIT overlay (auto-started in drawing mode, never takes focus) |
 | `~/.config/hypr/scripts/auto-rotate.sh` + `~/.config/systemd/user/auto-rotate.service` | Accelerometer rotation: monitor + pen + finger transforms together |
 | `~/.config/omarchy/plugins/.../argus/BarWidget.qml` | Fixed: `<font>` urgent markup → per-segment Row (WidgetButton is PlainText) |
+| `~/.config/omarchy/plugins/io.github.ngek202.tablet-toggle/` | Tablet-toggle bar widget (plugin G): `manifest.json` + `BarWidget.qml`, polls `tablet-mode.sh status`, click toggles |
 
 ## Phase 0 — Manual drawing mode ✅ DONE
 - [x] Install: `aseprite` (source 1.3.18.3), `wvkbd`, `xorg-xinput`, `iio-sensor-proxy`
@@ -108,7 +110,8 @@
 - Lesson: never `pkill -f` a bare word from scripts — it matches the caller's own command line. Use `pkill -x`.
 
 ## Phase 3 — Touch-first shell (planned)
-- [ ] OSK auto-show on focus, bar tablet-state indicator (tappable override)
+- [x] Bar tablet-state indicator (tappable override) — plugin G live 2026-09-06
+- [ ] OSK auto-show on focus
 - [ ] Edge-swipe workspace gestures
 
 ## Phase 4 — App profiles (planned)
