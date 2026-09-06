@@ -48,7 +48,7 @@ BarWidget {
   }
 
   function checkHealth() {
-    Quickshell.execDetached(["bash", "-lc", "exec omarchy-launch-floating-terminal-with-presentation $HOME/.config/hypr/scripts/tablet-verify.sh"])
+    Quickshell.execDetached(["bash", "-lc", "exec omarchy-launch-floating-terminal-with-presentation $HOME/.config/hypr/scripts/tablet-verify-interactive.sh"])
   }
 
   function tooltipText() {
