@@ -1,0 +1,83 @@
+# Maintainer: ngek202 <ngek202@gmail.com>
+# Upstream: https://github.com/ngek202/tablet-kbd
+#
+# Convertible tablet wiring + SAM OSK (from-scratch GTK4 on-screen
+# keyboard using wtype) for Omarchy/Hyprland. Ships system-share files
+# plus two user-facing commands:
+#
+#   tablet-kbd-install   per-user setup (~/.config wiring, units, verify)
+#   tablet-kbd-verify    read-only health check (see --fix inside)
+#
+# Per-user setup is deliberately NOT done by the package: the installer
+# wires the user's Hyprland config additively (backed up, idempotent)
+# and enables the systemd USER units, so it must run as the invoking
+# user — hence the tablet-kbd-install wrapper instead of package().
+
+pkgname=tablet-kbd-git
+pkgver=r49.9190c4c
+pkgrel=1
+pkgdesc="Convertible tablet wiring + SAM OSK (GTK4 on-screen keyboard) for Omarchy/Hyprland"
+arch=('any')
+url="https://github.com/ngek202/tablet-kbd"
+license=('GPL3')
+depends=(
+  'bash'
+  'python'
+  'jq'
+  'hyprland'
+  'wtype'
+  'gtk4'
+  'gtk4-layer-shell'
+  'python-gobject'
+  'lisgd'
+)
+makedepends=('git')
+optdepends=(
+  'squeekboard: fallback OSK backend (OSK_BACKEND=squeekboard)'
+  'wvkbd: fallback OSK backend (OSK_BACKEND=wvkbd)'
+)
+provides=('tablet-kbd')
+conflicts=('tablet-kbd')
+source=("${pkgname}::git+${url}.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd "${srcdir}/${pkgname}"
+  if git describe --tags >/dev/null 2>&1; then
+    git describe --long --tags | sed 's/^v//; s/-\([^-]*\)-g\([0-9a-f]*\)$/-r\1.\2/'
+  else
+    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  fi
+}
+
+package() {
+  local share="${pkgdir}/usr/share/tablet-kbd"
+  local src="${srcdir}/${pkgname}"
+
+  install -d "${share}"
+  install -Dm755 "${src}/install.sh" "${share}/install.sh"
+  cp -a "${src}/kbd"    "${share}/kbd"
+  cp -a "${src}/tablet" "${share}/tablet"
+  cp -a "${src}/hooks"  "${share}/hooks"
+
+  # License (AUR convention) + docs
+  install -Dm644 "${src}/LICENSE" \
+    "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+  install -Dm644 "${src}/README.md" \
+    "${share}/README.md"
+
+  # User-facing commands (generated — no external wrapper files needed)
+  install -d "${pkgdir}/usr/bin"
+  printf '%s\n' '#!/bin/bash' \
+    '# tablet-kbd-install — per-user setup for the system share.' \
+    '# Run as your own user (never sudo): additive ~/.config wiring,' \
+    '# units, device detection; ends verify-green. Idempotent.' \
+    'exec /usr/share/tablet-kbd/install.sh "$@"' \
+    > "${pkgdir}/usr/bin/tablet-kbd-install"
+  chmod 755 "${pkgdir}/usr/bin/tablet-kbd-install"
+
+  printf '%s\n' '#!/bin/bash' \
+    'exec /usr/share/tablet-kbd/tablet/tablet-verify.sh "$@"' \
+    > "${pkgdir}/usr/bin/tablet-kbd-verify"
+  chmod 755 "${pkgdir}/usr/bin/tablet-kbd-verify"
+}

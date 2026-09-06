@@ -213,9 +213,5 @@ if [[ "$FAIL" -ne 0 ]]; then
   exit 1
 fi
 "$HYPR/scripts/tablet-verify.sh" || { echo "FATAL: verify red — see FAIL lines above"; exit 1; }
-if [[ $REPO == /usr/share/tablet-kbd ]]; then
-  echo "install.sh: ALL GREEN — (AUR package: re-run 'tablet-kbd-install' anytime; verify with 'tablet-kbd-verify')"
-else
-  echo "install.sh: ALL GREEN — install with:"
-  echo "  git clone https://github.com/ngek202/tablet-kbd.git && ./tablet-kbd/install.sh"
-fi
+echo "install.sh: ALL GREEN — install with:"
+echo "  git clone https://github.com/ngek202/tablet-kbd.git && ./tablet-kbd/install.sh"

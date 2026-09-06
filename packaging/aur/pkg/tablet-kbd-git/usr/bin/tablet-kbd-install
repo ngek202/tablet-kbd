@@ -1,0 +1,5 @@
+#!/bin/bash
+# tablet-kbd-install — per-user setup for the system share.
+# Run as your own user (never sudo): additive ~/.config wiring,
+# units, device detection; ends verify-green. Idempotent.
+exec /usr/share/tablet-kbd/install.sh "$@"
