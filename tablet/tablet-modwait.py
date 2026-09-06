@@ -34,6 +34,7 @@ def main():
         return 0
     held = set()
     quiet_from = time.monotonic()
+    t_start = quiet_from
     end = quiet_from + TIMEOUT
     while time.monotonic() < end:
         r, _, _ = select.select([fd], [], [],
@@ -52,6 +53,15 @@ def main():
                 held.discard(code)
         if not held and time.monotonic() - quiet_from >= QUIET_NEED:
             break
+    waited = time.monotonic() - t_start
+    if waited >= 0.5:
+        try:
+            with open(os.path.expanduser(
+                    "~/.local/state/omarchy/tablet-modwait.log"),
+                    "a") as f:
+                f.write(f"{time.strftime('%H:%M:%S')} waited {waited:.2f}s\n")
+        except OSError:
+            pass
     return 0
 
 
