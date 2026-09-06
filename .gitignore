@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 *.bak.*
 *.log
+packaging/aur/src/
+packaging/aur/*.pkg.tar.zst
