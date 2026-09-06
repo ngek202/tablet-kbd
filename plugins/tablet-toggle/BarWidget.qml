@@ -103,7 +103,28 @@ BarWidget {
     opacity: root.available ? 1.0 : 0.4
     tooltipText: root.tooltipText()
     onPressed: function(b) {
+      if (b === Qt.RightButton) {
+        healthMenu.open = true
+        return
+      }
       root.toggle()
     }
+
+    // Touch opener: long-press steals the grab from the button's
+    // MouseArea only once recognized (quick taps still toggle).
+    // If this fights the MouseArea live, drop it (right-click stays).
+    TapHandler {
+      longPressThreshold: 0.8
+      grabPermissions: PointerHandler.CanTakeOverFromItems
+      onLongPressed: healthMenu.open = true
+    }
+  }
+
+  HealthMenu {
+    id: healthMenu
+    anchorItem: button
+    owner: root
+    bar: root.bar
+    host: root
   }
 }
