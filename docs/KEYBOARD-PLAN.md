@@ -3,8 +3,8 @@
 ## REMAINING (as of 2026-09-06 — remind on return)
 
 Builds (approved, awaiting go):
-1. Verify-only resilience script (`tablet-verify.sh` + report-only
-   `post-update.d` entry + `--fix`)
+1. DONE 2026-09-06: Verify-only resilience script (`tablet-verify.sh` +
+   report-only `post-update.d` hook + `--fix`) — green/red paths tested
 2. Modifier-keys spike (do virtual Super/Alt/Ctrl work at all?)
 3. DONE 2026-09-06: Bar toggle plugin G (manifest + QML + state bridging;
    B stays) — live-enabled, touch-verified hands-on

@@ -1,0 +1,11 @@
+#!/bin/bash
+# tablet-verify.hook — report-only post-update health check.
+# Runs tablet-verify.sh read-only after Omarchy updates; notifies ONLY
+# on failure. Never repairs — the user runs --fix deliberately.
+set -e
+
+if ! "$HOME/.config/hypr/scripts/tablet-verify.sh" >/tmp/tablet-verify-postupdate.log 2>&1; then
+  omarchy-notification-send -u critical -g 󰌌 "Tablet stack needs attention" \
+    "Post-update verify found problems. Run tablet-verify.sh (--fix for mechanical repairs)." \
+    --exec omarchy-launch-floating-terminal-with-presentation "$HOME/.config/hypr/scripts/tablet-verify.sh"
+fi
