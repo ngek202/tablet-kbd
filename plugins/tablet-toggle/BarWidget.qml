@@ -38,7 +38,7 @@ BarWidget {
     // Guarded tap (v0.2): no tablet stack, no toggle attempt — open the
     // menu with Install rows instead. Never a silent detached failure.
     if (!root.tabletPresent) {
-      healthMenu.open = true
+      root.checkHealth()
       return
     }
     // Optimistic flip for snappy touch feedback; the poll corrects it.
@@ -47,8 +47,14 @@ BarWidget {
     resyncTimer.restart()
   }
 
+  function checkHealth() {
+    if (root.bar) {
+      root.bar.run("omarchy-launch-floating-terminal-with-presentation $HOME/.config/hypr/scripts/tablet-verify.sh")
+    }
+  }
+
   function tooltipText() {
-    if (!root.tabletPresent) return "Tablet package not installed — click to install"
+    if (!root.tabletPresent) return "Tablet package not installed — right-click for health check"
     if (!root.oskPresent) return root.tabletOn ? "Tablet mode on (OSK missing — right-click to install)" : "Tablet mode off (OSK missing — right-click to install)"
     if (!root.available) return "Tablet Toggle (tablet-mode.sh not found — install package)"
     return root.tabletOn ? "Tablet mode on — click to exit" : "Tablet mode off — click to enter"
@@ -124,20 +130,10 @@ BarWidget {
     // notification → terminal path.
     onPressed: function(b) {
       if (b === Qt.RightButton) {
-        healthMenu.open = true
+        root.checkHealth()
         return
       }
       root.toggle()
     }
-  }
-
-  HealthMenu {
-    id: healthMenu
-    anchorItem: button
-    owner: root
-    bar: root.bar
-    host: root
-    showInstallTablet: !root.tabletPresent
-    showInstallOsk: !root.oskPresent
   }
 }
