@@ -51,12 +51,13 @@ remain selectable via `OSK_BACKEND`; SAM OSK is pinned as default.
   companion. Entering/leaving runs the tablet wiring: internal keyboard
   and touchpad off, auto-rotate on, gesture orientation, touch cursor.
 - **Exit tablet mode:** 3-finger swipe inward from the **left or right**
-  visual edge (orientation-aware), or `SUPER+SHIFT+T` while a keyboard is
-  live. The edge swipes are the permanent emergency exit. In laptop mode
-  the same edge swipes switch workspaces (dual-mode bindings).
-- **Gestures (finger):** 3-finger left/right = workspace switch (from
-  screen middle; swipes starting on the left/right edge are the
-  dual-mode exit bindings above); swipe up
+  visual edge (orientation-aware) — or the 4-finger left-edge swipe
+  (kept as the original emergency exit) — or `SUPER+SHIFT+T` while a
+  keyboard is live. The edge swipes are dual-mode: in laptop mode they
+  scroll window-pages instead.
+- **Gestures (finger):** 3-finger left/right = scroll to the previous/
+  next window-page (scrolling layout; works in all modes — in laptop
+  mode too). Swipe up from the bottom edge = SAM OSK; 3-finger up =
   from the bottom edge = summon SAM OSK; 3-finger up anywhere = toggle it.
 - **Pen users:** `touch-toggle.sh off` disables finger touch for palm
   rejection (pen keeps working); `on` restores it.
@@ -95,7 +96,8 @@ The installer also ships a report-only `post-update.d` hook that notifies
   `tablet-auto-exit.py`, `touch-gestures.sh` (lisgd), `auto-rotate.sh`,
   `touch-cursor.py`, `touch-toggle.sh`, `tablet.lua`,
   `tablet-devices.sh` (detection), `tablet-verify.sh`,
-  `tablet-verify-interactive.sh`, legacy toggles (`squeekboard-`,
+  `tablet-verify-interactive.sh`, `page-switch.sh` (page scrolling),
+  legacy toggles (`squeekboard-`,
   `wvkbd-`), `units/` (systemd user services)
 - `hooks/` — `tablet-verify.hook` (report-only post-update check)
 - `install.sh` — the installer
