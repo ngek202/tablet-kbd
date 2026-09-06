@@ -10,6 +10,22 @@ PopupCard {
   id: menu
 
   property var host: null
+  // v0.2 install hub: rows render only for missing pieces.
+  // Both missing → one combined row; OSK-only missing → OSK row.
+  property bool showInstallTablet: false
+  property bool showInstallOsk: false
+
+  // One installer behind every row (Phase B one-liner, fresh clone to
+  // /tmp so a partial/broken tree can't block repair). Visible terminal,
+  // explicit tap — the plugin owns nothing.
+  function installCmd() {
+    return "rm -rf /tmp/tablet-kbd-install && git clone https://github.com/ngek202/tablet-kbd.git /tmp/tablet-kbd-install && /tmp/tablet-kbd-install/install.sh"
+  }
+
+  function runInstall() {
+    menu.open = false
+    if (host && host.bar) host.bar.run("omarchy-launch-floating-terminal-with-presentation " + installCmd())
+  }
 
   contentWidth: menu.fittedContentWidth(Style.space(280))
   contentHeight: menu.fittedContentHeight(menuColumn.implicitHeight)
@@ -30,6 +46,29 @@ PopupCard {
     spacing: Style.space(4)
 
     WidgetButton {
+      visible: menu.showInstallTablet
+      width: parent.width
+      labelVisible: true
+      text: "Install tablet package"
+      tooltipText: "Clone tablet-kbd and run its installer (visible terminal)"
+      onPressed: function(b) {
+        if (b === Qt.LeftButton) menu.runInstall()
+      }
+    }
+
+    WidgetButton {
+      visible: menu.showInstallOsk && !menu.showInstallTablet
+      width: parent.width
+      labelVisible: true
+      text: "Install OSK"
+      tooltipText: "Repair the keyboard engine via the package installer"
+      onPressed: function(b) {
+        if (b === Qt.LeftButton) menu.runInstall()
+      }
+    }
+
+    WidgetButton {
+      visible: !menu.showInstallTablet
       width: parent.width
       labelVisible: true
       text: "Check tablet health"
@@ -40,6 +79,7 @@ PopupCard {
     }
 
     WidgetButton {
+      visible: !menu.showInstallTablet
       width: parent.width
       labelVisible: true
       text: "Repair tablet stack"

@@ -15,6 +15,10 @@ BarWidget {
   property bool tabletOn: false
   property bool available: true
   property bool refreshPending: false
+  // v0.2 per-piece presence (evolves `available` into a state enum).
+  // tabletPresent gates the toggle; oskPresent only informs.
+  property bool tabletPresent: true
+  property bool oskPresent: true
 
   function statusScript() {
     return "$HOME/.config/hypr/scripts/tablet-mode.sh status"
@@ -31,6 +35,12 @@ BarWidget {
 
   function toggle() {
     if (!root.bar) return
+    // Guarded tap (v0.2): no tablet stack, no toggle attempt — open the
+    // menu with Install rows instead. Never a silent detached failure.
+    if (!root.tabletPresent) {
+      healthMenu.open = true
+      return
+    }
     // Optimistic flip for snappy touch feedback; the poll corrects it.
     root.tabletOn = !root.tabletOn
     root.bar.run("$HOME/.config/hypr/scripts/tablet-mode.sh toggle")
@@ -38,6 +48,8 @@ BarWidget {
   }
 
   function tooltipText() {
+    if (!root.tabletPresent) return "Tablet package not installed — click to install"
+    if (!root.oskPresent) return root.tabletOn ? "Tablet mode on (OSK missing — right-click to install)" : "Tablet mode off (OSK missing — right-click to install)"
     if (!root.available) return "Tablet Toggle (tablet-mode.sh not found — install package)"
     return root.tabletOn ? "Tablet mode on — click to exit" : "Tablet mode off — click to enter"
   }
@@ -58,19 +70,23 @@ BarWidget {
 
   Process {
     id: statusProc
-    command: ["sh", "-c", "$HOME/.config/hypr/scripts/tablet-mode.sh status"]
+    command: ["sh", "-c", "$HOME/.config/hypr/scripts/tablet-mode.sh status 2>/dev/null; echo \"TABLET:$([ -x $HOME/.config/hypr/scripts/tablet-mode.sh ] && echo yes || echo no)\"; echo \"OSK:$([ -f $HOME/.config/hypr/scripts/custom-kbd.py ] && [ -f $HOME/.config/hypr/kbd-layouts/en.json ] && echo yes || echo no)\""]
     onRunningChanged: {
       if (!running && root.refreshPending) root.refresh()
-    }
-    onExited: function(exitCode) {
-      root.available = exitCode === 0
     }
     stdout: StdioCollector {
       waitForEnd: true
       onStreamFinished: {
-        var s = String(text || "").trim()
-        if (s === "on") root.tabletOn = true
-        else if (s === "off") root.tabletOn = false
+        var lines = String(text || "").trim().split("\n")
+        for (var i = 0; i < lines.length; i++) {
+          var s = lines[i].trim()
+          if (s === "on") root.tabletOn = true
+          else if (s === "off") root.tabletOn = false
+          else if (s === "TABLET:yes") { root.tabletPresent = true; root.available = true }
+          else if (s === "TABLET:no") { root.tabletPresent = false; root.available = false }
+          else if (s === "OSK:yes") root.oskPresent = true
+          else if (s === "OSK:no") root.oskPresent = false
+        }
       }
     }
   }
@@ -121,5 +137,7 @@ BarWidget {
     owner: root
     bar: root.bar
     host: root
+    showInstallTablet: !root.tabletPresent
+    showInstallOsk: !root.oskPresent
   }
 }
