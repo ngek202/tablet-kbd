@@ -185,6 +185,13 @@ units, or config files.
   Line not crossed: installs stay user-invoked + terminal-visible,
   never silent background exec.
 
+## Plugin dev discipline (learned 2026-09-06)
+
+- Plugin hot-reload is unreliable for swapping live widget code into the
+  running bar. After ANY edit to plugin QML, run `omarchy-restart-shell`
+  before testing — never trust the reload (caused a stale PASS/no-R
+  during the repair-flow test).
+
 ## Open threads (parked, not forgotten)
 
 - RESOLVED 2026-09-05: 1.6x confirmed as the default preset (not 1.5x). Observed 1.5x was Hyprland auto-scale after the rotation bug, since fixed.
