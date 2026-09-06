@@ -1,6 +1,6 @@
 pkgbase = tablet-kbd-git
 	pkgdesc = Convertible tablet wiring + SAM OSK (GTK4 on-screen keyboard) for Omarchy/Hyprland
-	pkgver = r49.9190c4c
+	pkgver = r51.c6f5a7f
 	pkgrel = 1
 	url = https://github.com/ngek202/tablet-kbd
 	arch = any
