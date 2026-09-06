@@ -65,7 +65,7 @@ mkdir -p "$HYPR/scripts" "$HYPR/kbd-layouts" "$HOOKDIR" "$UNITDIR" "$STATE"
 for s in tablet-mode.sh tablet-modwait.py tablet-auto-exit.py touch-gestures.sh \
          auto-rotate.sh touch-cursor.py touch-toggle.sh osk-toggle.sh \
          custom-kbd.py custom-kbd-toggle.sh squeekboard-toggle.sh wvkbd-toggle.sh \
-         tablet-verify.sh; do
+         tablet-verify.sh tablet-verify-interactive.sh; do
   src=""
   [[ -f "$REPO/tablet/$s" ]] && src="$REPO/tablet/$s"
   [[ -f "$REPO/kbd/$s" ]] && src="$REPO/kbd/$s"
