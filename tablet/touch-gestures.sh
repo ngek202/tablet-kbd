@@ -74,10 +74,12 @@ PAGES="$HOME/.config/hypr/scripts/page-switch.sh"
 STATE="$HOME/.local/state/omarchy/toggles/hypr/tablet-mode-on"
 EDGE_EXIT_L="sh -c 'if [ -f $STATE ]; then $HOME/.config/hypr/scripts/tablet-mode.sh off; else $PAGES prev; fi'"
 EDGE_EXIT_R="sh -c 'if [ -f $STATE ]; then $HOME/.config/hypr/scripts/tablet-mode.sh off; else $PAGES next; fi'"
-# 4-finger left-edge: ORIGINAL emergency exit, restored 2026-09-06
-# alongside the 3-finger edges (user preference: 3-finger alone felt
-# off). Tablet-only — no-op in laptop mode (stray 4-finger never kills
-# a manually opened OSK there).
+# 4-finger edges: ORIGINAL emergency exit (restored 2026-09-06 alongside
+# the 3-finger edges per user preference: 3-finger alone felt off), now
+# on BOTH edges (right-edge added after the user found it missing when
+# testing — original restore carried only the left-edge binding).
+# Tablet-only — no-op in laptop mode (stray 4-finger never kills a
+# manually opened OSK there).
 TABLET_OFF="sh -c '[ -f $STATE ] && $HOME/.config/hypr/scripts/tablet-mode.sh off'"
 
 # Thresholds mirror sxmo defaults; tune via env if needed.
@@ -99,4 +101,5 @@ exec lisgd -d "$DEV" -o "${ORIENTATION:-0}" -t "$TH" -T "$TH_P" \
   -g "3,RL,*,*,$PAGES next" \
   -g "1,DU,B,*,$OSK" \
   -g "3,DU,*,*,$OSK" \
-  -g "4,LR,L,*,$TABLET_OFF" >/dev/null 2>&1
+  -g "4,LR,L,*,$TABLET_OFF" \
+  -g "4,RL,R,*,$TABLET_OFF" >/dev/null 2>&1
