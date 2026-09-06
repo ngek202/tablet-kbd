@@ -103,7 +103,7 @@ mode_on() {
   else
     : >"$STATE_FILE"
     osk_start
-    notify "Tablet mode on — 4-finger swipe inward from left edge to exit"
+    notify "Tablet mode on — 3-finger swipe inward from left or right edge to exit"
   fi
   return $FAILED
 }

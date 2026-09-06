@@ -5,12 +5,20 @@
 # Gestures: 3-finger L/R = workspace, 1-finger up from the visual bottom
 # edge = OSK, 3-finger up anywhere = OSK toggle (the edge-free dismiss:
 # a full-width OSK covers the bottom edge, so the edge swipe can't reach
-# while open), 4-finger inward from the visual LEFT edge = exit tablet
-# mode (moved 2026-09-06 off the top edge: swipes originating on the bar
+# while open), 3-finger inward from the visual LEFT or RIGHT edge = exit
+# tablet mode (was 4-finger left-edge only until 2026-09-06; moved off
+# the top edge earlier the same day: swipes originating on the bar
 # dragged through widgets). "Visual" edges follow rotation via -o below.
 # Direction code reads origin-to-travel (DU,B = bottom→up), so left-edge
-# inward is LR,L. This is the emergency exit — it stays no matter what
-# (bar plugin crash, shell death); never remove without a replacement.
+# inward is LR,L and right-edge inward is RL,R.
+# EDGE PRIORITY: the edge-bound exit gestures are defined BEFORE the
+# generic workspace gestures because lisgd executes the FIRST match
+# (lisgd.c gestureexecute: return 1). Their commands are dual-mode: in
+# tablet mode they exit; in laptop mode they fall through to the same
+# workspace dispatch the generic binding would run — so edge-originated
+# 3-finger swipes keep switching workspaces when tablet mode is off.
+# This is the emergency exit — it stays no matter what (bar plugin
+# crash, shell death); never remove without a replacement.
 # NOTE 2026-09-05: 4-finger L/R window focus was tried and reverted —
 # awkward to perform, conflicts with in-app touch (file manager); tap
 # the target window to focus it instead (direct manipulation).
@@ -54,9 +62,12 @@ DEV="/dev/input/$EVENT"
 pkill -x lisgd 2>/dev/null || true
 
 OSK="$HOME/.config/hypr/scripts/osk-toggle.sh"
-# Exit only when tablet mode is actually on (no-op in laptop mode, so a
-# stray 4-finger swipe never kills a manually opened OSK there).
-TABLET_OFF="sh -c '[ -f $HOME/.local/state/omarchy/toggles/hypr/tablet-mode-on ] && $HOME/.config/hypr/scripts/tablet-mode.sh off'"
+# Edge-exit gestures are dual-mode (see header): exit tablet mode when
+# it's on; otherwise perform the same workspace dispatch the generic
+# binding would — edge-originated 3-finger swipes never become dead zones.
+STATE="$HOME/.local/state/omarchy/toggles/hypr/tablet-mode-on"
+EDGE_EXIT_L="sh -c 'if [ -f $STATE ]; then $HOME/.config/hypr/scripts/tablet-mode.sh off; else hyprctl dispatch workspace -1; fi'"
+EDGE_EXIT_R="sh -c 'if [ -f $STATE ]; then $HOME/.config/hypr/scripts/tablet-mode.sh off; else hyprctl dispatch workspace +1; fi'"
 
 # Thresholds mirror sxmo defaults; tune via env if needed.
 TH="${SXMO_LISGD_THRESHOLD:-125}"
@@ -66,9 +77,12 @@ TH_P="${SXMO_LISGD_THRESHOLD_PRESSED:-60}"
 # script with ORIENTATION set on every rotation). lisgd's own -o flag
 # rotates its gesture frame, so one static binding set works in every
 # orientation — no per-orientation edge rebinding needed.
+# ORDER MATTERS: edge-bound exit gestures BEFORE the generic * gestures
+# (lisgd executes the first defined match).
 exec lisgd -d "$DEV" -o "${ORIENTATION:-0}" -t "$TH" -T "$TH_P" \
+  -g "3,LR,L,*,$EDGE_EXIT_L" \
+  -g "3,RL,R,*,$EDGE_EXIT_R" \
   -g "3,LR,*,*,hyprctl dispatch workspace -1" \
   -g "3,RL,*,*,hyprctl dispatch workspace +1" \
   -g "1,DU,B,*,$OSK" \
-  -g "3,DU,*,*,$OSK" \
-  -g "4,LR,L,*,$TABLET_OFF" >/dev/null 2>&1
+  -g "3,DU,*,*,$OSK" >/dev/null 2>&1

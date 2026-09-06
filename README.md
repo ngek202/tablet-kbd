@@ -50,10 +50,13 @@ remain selectable via `OSK_BACKEND`; SAM OSK is pinned as default.
 - **Tablet mode:** toggle with `SUPER+SHIFT+T` or the bar-widget
   companion. Entering/leaving runs the tablet wiring: internal keyboard
   and touchpad off, auto-rotate on, gesture orientation, touch cursor.
-- **Exit tablet mode:** 4-finger swipe inward from the **left** visual
-  edge (orientation-aware), or `SUPER+SHIFT+T` while a keyboard is live.
-  The edge swipe is the permanent emergency exit.
-- **Gestures (finger):** 3-finger left/right = workspace switch; swipe up
+- **Exit tablet mode:** 3-finger swipe inward from the **left or right**
+  visual edge (orientation-aware), or `SUPER+SHIFT+T` while a keyboard is
+  live. The edge swipes are the permanent emergency exit. In laptop mode
+  the same edge swipes switch workspaces (dual-mode bindings).
+- **Gestures (finger):** 3-finger left/right = workspace switch (from
+  screen middle; swipes starting on the left/right edge are the
+  dual-mode exit bindings above); swipe up
   from the bottom edge = summon SAM OSK; 3-finger up anywhere = toggle it.
 - **Pen users:** `touch-toggle.sh off` disables finger touch for palm
   rejection (pen keeps working); `on` restores it.
