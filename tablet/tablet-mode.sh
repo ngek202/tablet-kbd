@@ -104,6 +104,14 @@ mode_off() {
     alert "Tablet off hit hyprctl errors — reloading Hyprland to restore input"
     hyprctl reload >/dev/null 2>&1 || true
   fi
+  # Modifier reset (2026-09-06): entering via SUPER+SHIFT+T disables the
+  # keyboard mid-hotkey while Super/Shift are still held, so the release
+  # never lands and the modifier stays stranded (every key fires Super
+  # binds after exit). A virtual press+release pair re-syncs compositor
+  # state on every exit. Best-effort: wtype missing = skip silently.
+  for mod in Super_L Super_R Shift_L Shift_R; do
+    wtype -P "$mod" -p "$mod" >/dev/null 2>&1 || true
+  done
   rm -f "$STATE_FILE"
   osk_stop
   notify "Tablet mode off"
