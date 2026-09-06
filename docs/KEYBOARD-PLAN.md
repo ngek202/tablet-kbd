@@ -1,5 +1,22 @@
 # Custom Keyboard Master Plan — "Squeekboard-simple, our engine"
 
+## REMAINING (as of 2026-09-06 — remind on return)
+
+Builds (approved, awaiting go):
+1. Verify-only resilience script (`tablet-verify.sh` + report-only
+   `post-update.d` entry + `--fix`)
+2. Modifier-keys spike (do virtual Super/Alt/Ctrl work at all?)
+3. Bar toggle plugin G (manifest + QML + state bridging; B stays)
+4. Phase 4 share package (installer + docs; retire Squeekboard/wvkbd)
+
+Verification (hands-on):
+5. Tablet enter/exit ×3 completion
+6. Left-up / bottom-up swipe calibration
+7. Push 4 unpushed repo commits
+
+External (user):
+8. 1.5x preset desktop cross-check (resolved locally as 1.6x)
+
 > Machine: Dynabook Portege X30W-J, Omarchy 4.0.2 / Hyprland 0.56.2 (Lua).
 > Status: Phase 1 DONE + hardened, Phase 2 code done (portrait gate open),
 > Phase 3 queued. Interim OSK is Squeekboard (Shift broken,
