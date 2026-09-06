@@ -61,7 +61,8 @@ done
 # --- 3. State + layout sanity ---
 BACKEND="$(cat "$HOME/.local/state/omarchy/toggles/hypr/osk-backend" 2>/dev/null || echo custom)"
 case "$BACKEND" in
-  custom|squeekboard|wvkbd) pass "osk-backend=$BACKEND" ;;
+  custom) pass "osk-backend=$BACKEND" ;;
+  squeekboard|wvkbd) echo "WARN: osk-backend=$BACKEND (deliberate fallback — installer default is custom)" ;;
   *) fail "osk-backend invalid: $BACKEND" ;;
 esac
 
@@ -95,5 +96,15 @@ if [[ "$FAIL" -eq 0 ]]; then
   echo "tablet-verify: ALL GREEN"
 else
   echo "tablet-verify: PROBLEMS FOUND (run with --fix for mechanical repairs)"
+fi
+
+# --- 6. Fallback coexistence (INFO only — never FAIL) ---
+command -v squeekboard >/dev/null 2>&1 \
+  && echo "INFO: fallback present: squeekboard (select via OSK_BACKEND=squeekboard)" \
+  || echo "INFO: fallback absent: squeekboard (optional safety net: sudo pacman -S squeekboard)"
+if command -v wvkbd >/dev/null 2>&1 || command -v wvkbd-mobintl >/dev/null 2>&1; then
+  echo "INFO: fallback present: wvkbd (select via OSK_BACKEND=wvkbd)"
+else
+  echo "INFO: fallback absent: wvkbd (optional safety net: sudo pacman -S wvkbd)"
 fi
 exit "$FAIL"

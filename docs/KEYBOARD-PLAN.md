@@ -124,7 +124,15 @@ Layout JSON + build/run recipe + wiring notes for other convertible users.
 - [x] Thumb split layout: ⇄ toggle on alpha row, width-midpoint halves + center gap (100px/48px), landscape starts split / portrait starts full, choice persists; pangram + toggle/persistence verified hands-on
 - [x] Shift letter visuals + segfault fix: letters render uppercase while latch/Caps (symbols static); user-found crash (split + shifted + double-click letter) was latch-release destroying widgets under in-flight gestures → visuals now updated in place, structural rebuilds deferred to idle; verified hands-on
 - [x] Phase 3: toggle refactor + swap + integration (osk-toggle dispatcher, SUPER+B/gestures/tablet-mode rewired, auto-exit watcher wired, lisgd systemd service, gesture `-o` orientation — all machine-verified + user-confirmed; reboot persistence test still open)
-- [ ] Phase 4: share docs; retire Squeekboard/wvkbd per user call
+- [ ] Phase 4: share package (installer + docs). Coexistence locked
+  2026-09-06: installer NEVER uninstalls OSK software; pins `custom`
+  default explicitly (re-pin on reinstall); binds/gestures point at
+  dispatcher (single switch point); existing keyboards untouched and
+  selectable via `OSK_BACKEND`; verify WARNs (not FAILs) on
+  non-custom backend; "retire" reframed as retired-from-default
+  (done in Phase 3). Wiring locked: auto-apply additive-only under
+  grep-idempotency + per-file backup; unfamiliar anchors → automatic
+  print-for-paste fallback; ends verify-green-or-loud-fail.
 
 ## Packaging (locked 2026-09-05)
 
