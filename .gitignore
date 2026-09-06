@@ -4,3 +4,4 @@ __pycache__/
 *.log
 packaging/aur/src/
 packaging/aur/*.pkg.tar.zst
+packaging/aur/pkg/

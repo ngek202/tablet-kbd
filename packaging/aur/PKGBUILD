@@ -14,7 +14,7 @@
 # user — hence the tablet-kbd-install wrapper instead of package().
 
 pkgname=tablet-kbd-git
-pkgver=r49.9190c4c
+pkgver=r51.c6f5a7f
 pkgrel=1
 pkgdesc="Convertible tablet wiring + SAM OSK (GTK4 on-screen keyboard) for Omarchy/Hyprland"
 arch=('any')
