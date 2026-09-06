@@ -13,6 +13,9 @@ for a convertible with no kernel fold signal.
   `units/` (systemd user services)
 - `docs/` — `TABLET.md` (machine changelog); master plan lives next
   to this repo as `KEYBOARD-PLAN.md`
+- `plugin/` — optional bar-widget companion (`io.github.ngek202.tablet-toggle`):
+  manifest + QML polling `tablet-mode.sh status`, click toggles tablet mode.
+  Depends on the package, never the reverse. SUPER+B untouched.
 
 ## Status
 
