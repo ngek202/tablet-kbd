@@ -116,10 +116,66 @@ def to_screen(x, y, xmax, ymax, W, H, t):
     return nx * W, ny * H
 
 
+def read_cursor():
+    try:
+        out = subprocess.run(["hyprctl", "cursorpos"], capture_output=True,
+                             text=True, timeout=5).stdout.strip()
+        x, y = out.split(",")
+        return int(x), int(y)
+    except Exception:
+        return None
+
+
+def focus_at(px, py):
+    """Focus the topmost mapped client under (px, py) on the active
+    workspace. Makes double-tap = go there (cursor + focus together),
+    replacing the manual ping-pong of single taps."""
+    try:
+        clients = json.loads(subprocess.run(
+            ["hyprctl", "clients", "-j"], capture_output=True, text=True,
+            timeout=5).stdout)
+        ws = json.loads(subprocess.run(
+            ["hyprctl", "activeworkspace", "-j"], capture_output=True,
+            text=True, timeout=5).stdout).get("id")
+    except Exception:
+        return False
+    best, best_recency = None, None
+    for c in clients:
+        try:
+            if not c.get("mapped") or c.get("hidden"):
+                continue
+            if c.get("workspace", {}).get("id") != ws:
+                continue
+            (ax, ay), (aw, ah) = c["at"], c["size"]
+            if not (ax <= px < ax + aw and ay <= py < ay + ah):
+                continue
+            recency = c.get("focusHistoryID", 1 << 30)
+            if best is None or recency < best_recency:
+                best, best_recency = c, recency
+        except (KeyError, TypeError):
+            continue
+    if best is None:
+        return None  # empty desktop / layer surface — nothing to focus
+    try:
+        # Legacy `hyprctl dispatch focuswindow address:` does not survive
+        # the Lua translation layer; the object form does (probed 2026).
+        r = subprocess.run(
+            ["hyprctl", "eval",
+             f"hl.dispatch(hl.dsp.focus({{ window = "
+             f"\"address:{best['address']}\" }}))"],
+            capture_output=True, text=True, timeout=5)
+        out = (r.stdout + r.stderr)[:60]
+        return r.returncode == 0 and "error" not in out \
+            and "warning" not in out
+    except Exception:
+        return False
+
+
 def warp(sx, sy):
     """Absolute warp via the native cursor dispatcher (found by probing
     hl.dsp: cursor.move takes { x, y }). No converge loop, no uinput,
-    rotation handled by the target mapping in to_screen()."""
+    rotation handled by the target mapping in to_screen(). Logs the
+    ACTUAL landing so mapping vs execution errors stay separable."""
     if not resolve_sig():
         log("warp: no signature")
         return False
@@ -132,7 +188,19 @@ def warp(sx, sy):
         ok = r.returncode == 0 and "error" not in (r.stdout + r.stderr)[:60]
         if not ok:
             log(f"warp eval failed: {(r.stdout + r.stderr)[:120]}")
-        return ok
+            return False
+        time.sleep(0.1)
+        pos = read_cursor()
+        if pos is None:
+            return True  # dispatched; landing unverified
+        dx, dy = int(sx - pos[0]), int(sy - pos[1])
+        landed = abs(dx) < 12 and abs(dy) < 12
+        log(f"landed at {pos[0]},{pos[1]} err=({dx},{dy}) "
+            f"{'EXACT' if landed else 'OFF'}")
+        focused = focus_at(pos[0], pos[1])
+        if focused is not None:
+            log(f"focus {'ok' if focused else 'FAILED'}")
+        return landed
     except Exception as e:
         log(f"warp failed: {e}")
         return False
