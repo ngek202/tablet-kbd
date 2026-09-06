@@ -102,21 +102,16 @@ BarWidget {
     active: root.tabletOn && root.available
     opacity: root.available ? 1.0 : 0.4
     tooltipText: root.tooltipText()
+    // Click routing lives here. A touch long-press opener was tried
+    // twice (TapHandler steal, overlay pressAndHold) — both starved.
+    // Right-click only; touch users get verify via the post-update
+    // notification → terminal path.
     onPressed: function(b) {
       if (b === Qt.RightButton) {
         healthMenu.open = true
         return
       }
       root.toggle()
-    }
-
-    // Touch opener: long-press steals the grab from the button's
-    // MouseArea only once recognized (quick taps still toggle).
-    // If this fights the MouseArea live, drop it (right-click stays).
-    TapHandler {
-      longPressThreshold: 0.8
-      grabPermissions: PointerHandler.CanTakeOverFromItems
-      onLongPressed: healthMenu.open = true
     }
   }
 
