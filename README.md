@@ -1,5 +1,7 @@
 # Convertible Tablet + SAM OSK
 
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ngek202-yellow)](https://www.buymeacoffee.com/ngek202)
+
 **SAM OSK** — a from-scratch on-screen keyboard (GTK4 + `wtype`) — plus
 finger-tablet wiring for convertible laptops with no kernel fold signal.
 
