@@ -222,3 +222,11 @@ else
   echo "install.sh: ALL GREEN — install with:"
   echo "  git clone https://github.com/ngek202/tablet-kbd.git && ./tablet-kbd/install.sh"
 fi
+
+echo
+echo "── Quick usage ──────────────────────────────────"
+echo "  SUPER+B            on-screen keyboard (SAM OSK)"
+echo "  SUPER+SHIFT+T      tablet mode on/off"
+echo "  3-finger swipe L/R pages · swipe up (bottom edge) = keyboard"
+echo "  3-finger inward from left/right edge = exit tablet mode"
+echo "  Full guide: github.com/ngek202/tablet-kbd#usage"
