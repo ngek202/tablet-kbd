@@ -2,12 +2,31 @@
 
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ngek202-yellow)](https://www.buymeacoffee.com/ngek202)
 
-**SAM OSK** — a from-scratch on-screen keyboard (GTK4 + `wtype`) — plus
-finger-tablet wiring for convertible laptops with no kernel fold signal.
+**For the moments your laptop becomes a tablet** — presenting, notes in
+meetings, reading, watching, or just lounging with touch. Built for 2-in-1
+**convertible laptops** on **Omarchy / Hyprland** (Arch-based, Wayland),
+especially machines without a working kernel fold/tablet-mode switch:
+fold the laptop, get a touch-first desktop.
 
-Device names are **detected at runtime, not hardcoded** (see *Devices*
-below), so the package is not bound to one model. Developed and tested
-on a Dynabook Portege X30W-J running Omarchy/Hyprland.
+**What you get:**
+
+- **SAM OSK** — from-scratch GTK4 on-screen keyboard: Shift latch +
+  Caps double-tap, symbols page, hold-repeat, split thumb layout (`⇄`),
+  **never steals focus**
+- **Tablet mode** — internal keyboard + touchpad off, auto-rotate via
+  accelerometer, orientation-aware gestures, double-tap cursor warp +
+  window focus
+- **Page scrolling** — 3-finger swipes navigate scrolling-layout
+  window-pages in any mode
+- **Self-healing** — device auto-detection (override file for odd
+  hardware), health check with interactive repair, post-update
+  protection hook
+
+**Support & limitations:** Omarchy 4.x / Hyprland (Wayland) — X11 and
+other compositors untested. Touch digitizer required. **Pen:**
+palm-rejection toggle only today — full pen support is a parked future
+update. **Omarchy ships no OSK by default** — installing this gives you
+one. Works without a kernel fold signal (the whole point).
 
 - **License:** GPL-3.0 (see `LICENSE`)
 - **Companion bar-widget:** https://github.com/ngek202/tablet-toggle (separate repo)
@@ -30,10 +49,10 @@ The installer is idempotent and backs up anything it replaces. It:
    your content. If an anchor is unfamiliar it prints what to paste
    instead of guessing.
 5. Pins SAM OSK as the default backend.
-6. Runs the verify check at the end — it fails loudly if not green.
 
-Coexistence, not conquest: existing keyboards are left untouched and
-remain selectable via `OSK_BACKEND`; SAM OSK is pinned as default.
+Coexistence, not conquest: on machines that already have an OSK it's
+left untouched and selectable via `OSK_BACKEND`; on Omarchy — which
+ships none — SAM OSK becomes your first.
 
 ## Requirements
 
@@ -46,25 +65,18 @@ remain selectable via `OSK_BACKEND`; SAM OSK is pinned as default.
 
 ## Usage
 
-- **SAM OSK (on-screen keyboard):** toggle with `SUPER+B`, or tap it in
-  the bar via the companion widget. Dispatch goes through
-  `osk-toggle.sh`; the backend is chosen by `OSK_BACKEND`.
-- **Tablet mode:** toggle with `SUPER+SHIFT+T` or the bar-widget
-  companion. Entering/leaving runs the tablet wiring: internal keyboard
-  and touchpad off, auto-rotate on, gesture orientation, touch cursor.
-- **Exit tablet mode:** 3-finger swipe inward from the **left or right**
-  visual edge (orientation-aware) — or the 4-finger left-edge swipe
-  (kept as the original emergency exit) — or `SUPER+SHIFT+T` while a
-  keyboard is live. The edge swipes are dual-mode: in laptop mode they
-  scroll window-pages instead.
-- **Gestures (finger):** 3-finger left/right = scroll to the previous/
-  next window-page (scrolling layout; works in all modes — in laptop
-  mode too). Swipe up from the bottom edge = summon SAM OSK; 3-finger
-  up anywhere = toggle it.
-- **Pen users:** `touch-toggle.sh off` disables finger touch for palm
-  rejection (pen keeps working); `on` restores it.
-- **Other keyboards:** set `OSK_BACKEND=squeekboard` (or `wvkbd`) in the
-  environment to use a fallback; SAM OSK remains the default.
+| Action | How |
+|---|---|
+| **SAM OSK** | `SUPER+B` · or tap the bar widget |
+| **Tablet mode** | `SUPER+SHIFT+T` · or the bar widget |
+| **Exit tablet mode** | 3-finger swipe inward from **left or right** edge · 4-finger left-edge · `SUPER+SHIFT+T` (keyboard live) |
+| **Scroll pages** | 3-finger swipe left/right — anywhere, any mode |
+| **Summon SAM OSK** | Swipe up from bottom edge · 3-finger up |
+| **Pen palm-rejection** | `touch-toggle.sh off` (finger off, pen works) · `on` restores |
+| **Fallback keyboard** | `OSK_BACKEND=squeekboard` / `wvkbd` — install one first (Omarchy ships none) |
+
+Entering tablet mode: internal keyboard + touchpad off, auto-rotate on,
+gestures orientation-aware, touch cursor active.
 
 ## Devices (auto-detection)
 
@@ -99,8 +111,8 @@ The installer also ships a report-only `post-update.d` hook that notifies
   `touch-cursor.py`, `touch-toggle.sh`, `tablet.lua`,
   `tablet-devices.sh` (detection), `tablet-verify.sh`,
   `tablet-verify-interactive.sh`, `page-switch.sh` (page scrolling),
-  legacy toggles (`squeekboard-`,
-  `wvkbd-`), `units/` (systemd user services)
+  legacy toggles (`squeekboard-`, `wvkbd-`), `units/` (systemd user
+  services)
 - `hooks/` — `tablet-verify.hook` (report-only post-update check)
 - `install.sh` — the installer
 
