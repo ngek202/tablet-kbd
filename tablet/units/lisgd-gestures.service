@@ -1,12 +1,18 @@
 [Unit]
 Description=Touchscreen gestures (lisgd) for tablet companion
 After=default.target
+# The finger evdev node can vanish transiently (suspend/resume,
+# device re-enumeration — seen 2026-09-08: node moved event14→event12
+# and the restart attempt exited 0 during the gap). The script exits 0
+# by design when no node is found, so on-failure never retried. Retry
+# unbounded until the device reappears.
+StartLimitIntervalSec=0
 
 [Service]
 Type=simple
 ExecStart=%h/.config/hypr/scripts/touch-gestures.sh
-Restart=on-failure
-RestartSec=3
+Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=default.target
