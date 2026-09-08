@@ -2,10 +2,22 @@
 # tablet-verify.hook — report-only post-update health check.
 # Runs tablet-verify.sh read-only after Omarchy updates; notifies ONLY
 # on failure. Never repairs — the user runs --fix deliberately.
+# Diagnostics go to a PRIVATE per-user log (never shared /tmp — a
+# predictable path there is a symlink/truncation attack surface,
+# flagged by the marketplace security review 2026-09-08).
 set -e
 
-if ! "$HOME/.config/hypr/scripts/tablet-verify.sh" >/tmp/tablet-verify-postupdate.log 2>&1; then
+LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/tablet-kbd/logs"
+LOG="$LOG_DIR/tablet-verify-postupdate.log"
+mkdir -p "$LOG_DIR" && chmod 700 "$LOG_DIR"
+# no-follow/regular-file guard: a symlink or non-regular file at the
+# log path is removed so the redirect below creates a fresh owner-only file
+if [ -L "$LOG" ] || { [ -e "$LOG" ] && [ ! -f "$LOG" ]; }; then
+  rm -f "$LOG"
+fi
+
+if ! ( umask 077; "$HOME/.config/hypr/scripts/tablet-verify.sh" >"$LOG" 2>&1 ); then
   omarchy-notification-send -u critical -g 󰌌 "Tablet stack needs attention" \
     "Post-update verify found problems. Run tablet-verify.sh (--fix for mechanical repairs)." \
-    --exec omarchy-launch-floating-terminal-with-presentation "$HOME/.config/hypr/scripts/tablet-verify.sh"
+    --exec omarchy-launch-floating-terminal-with-presentation "$HOME/.config/hypr/scripts/tablet-verify-interactive.sh"
 fi

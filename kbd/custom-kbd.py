@@ -7,12 +7,32 @@
 # Backspace/Return/Space/Tab/Esc/arrows, dedicated hide key.
 # Focus: layer-shell keyboard-interactivity NONE + buttons can_focus=False,
 # so taps never steal focus (Hyprland #1939 regression check).
+import os
 import subprocess
 import sys
 import time
 import traceback
 
-CRASH_LOG = "/tmp/custom-kbd-crash.log"
+
+def _safe_crash_log(name):
+    """Owner-only private log dir; kills any symlink/non-regular file at
+    the log path before open() — never shared /tmp (symlink/truncation
+    attack surface, marketplace security review 2026-09-08)."""
+    log_dir = os.path.join(
+        os.environ.get("XDG_STATE_HOME", os.path.expanduser("~/.local/state")),
+        "tablet-kbd", "logs")
+    os.makedirs(log_dir, mode=0o700, exist_ok=True)
+    try:
+        os.chmod(log_dir, 0o700)
+    except OSError:
+        pass
+    path = os.path.join(log_dir, name)
+    if os.path.islink(path) or (os.path.exists(path) and not os.path.isfile(path)):
+        os.remove(path)
+    return path
+
+
+CRASH_LOG = _safe_crash_log("custom-kbd-crash.log")
 
 
 def _excepthook(etype, value, tb):

@@ -19,8 +19,16 @@ do_show() {
     # linking.md) or init_for_window silently fails: window falls back
     # to a regular window and loses exclusive-zone + keyboard-NONE.
     export LD_PRELOAD=/usr/lib/libgtk4-layer-shell.so
-    # Keep stderr (incl. GLib fatals) for crash diagnosis.
-    uwsm-app -- python3 "$HOME/.config/hypr/scripts/$APP" >>/tmp/custom-kbd-stderr.log 2>&1 &
+    # Keep stderr (incl. GLib fatals) for crash diagnosis — in a PRIVATE
+    # per-user dir, never shared /tmp (symlink/truncation attack surface,
+    # marketplace security review 2026-09-08).
+    LOG_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/tablet-kbd/logs"
+    OSK_STDERR_LOG="$LOG_DIR/osk-stderr.log"
+    mkdir -p "$LOG_DIR" && chmod 700 "$LOG_DIR"
+    if [ -L "$OSK_STDERR_LOG" ] || { [ -e "$OSK_STDERR_LOG" ] && [ ! -f "$OSK_STDERR_LOG" ]; }; then
+      rm -f "$OSK_STDERR_LOG"
+    fi
+    ( umask 077; uwsm-app -- python3 "$HOME/.config/hypr/scripts/$APP" >>"$OSK_STDERR_LOG" 2>&1 & )
   fi
 }
 
