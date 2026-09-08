@@ -126,5 +126,8 @@ The installer also ships a report-only `post-update.d` hook that notifies
 - To remove the stack: disable the three units
   (`systemctl --user disable --now auto-rotate lisgd-gestures
   touch-cursor`), delete the `hypr.tablet` require line and the added
-  binds, and set `OSK_BACKEND=squeekboard` (or remove the keybind) —
-  or just switch `OSK_BACKEND` and keep it around as a fallback.
+  binds, and remove the `SUPER+B` keybind. Note: Omarchy ships no OSK,
+  so after removal there is no on-screen keyboard unless you install an
+  alternative first (e.g. `sudo pacman -S squeekboard`, then set
+  `OSK_BACKEND=squeekboard`) — or keep this stack installed and just
+  switch `OSK_BACKEND` when you want a different engine.
