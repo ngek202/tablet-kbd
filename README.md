@@ -26,7 +26,12 @@ fold the laptop, get a touch-first desktop.
 other compositors untested. Touch digitizer required. **Pen:**
 palm-rejection toggle only today — full pen support is a parked future
 update. **Omarchy ships no OSK by default** — installing this gives you
-one. Works without a kernel fold signal (the whole point).
+one. **No fold signal, no auto-entry:** this hardware class reports no
+kernel tablet-mode switch, so folding cannot auto-trigger tablet mode —
+and orientation heuristics can't tell folding apart from tent mode or
+sideways reading (they'd falsely disable your keyboard). Tablet mode is
+one tap away (`SUPER+SHIFT+T` or the bar widget); the screen still
+auto-rotates when you fold.
 
 - **License:** GPL-3.0 (see `LICENSE`)
 - **Companion bar-widget:** https://github.com/ngek202/tablet-toggle (separate repo)
