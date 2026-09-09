@@ -180,9 +180,18 @@ EOF
     hyprctl reload >/dev/null 2>&1; sleep 3
     # JSON form: Hyprland 0.56 reports these as bool:true/false (the old
     # "int: 1" text grep never passed — latent since the gate was written,
-    # exposed by the first fresh-machine run 2026-09-09).
-    NS=$(hyprctl -j getoption input:touchpad:natural_scroll 2>/dev/null | jq -r '.bool // empty')
-    DWT=$(hyprctl -j getoption input:touchpad:disable_while_typing 2>/dev/null | jq -r '.bool // empty')
+    # exposed by the first fresh-machine run 2026-09-09). The reload is
+    # ASYNC — retry the check instead of a single sample (race seen 2026-09-09).
+    NS=""
+    DWT=""
+    # Poll WITHOUT re-kicking the reload: a second reload resets the
+    # async config evaluation and starves it (seen 2026-09-09).
+    for _ in 1 2 3 4 5; do
+      sleep 2
+      NS=$(hyprctl -j getoption input:touchpad:natural_scroll 2>/dev/null | jq -r '.bool // empty')
+      DWT=$(hyprctl -j getoption input:touchpad:disable_while_typing 2>/dev/null | jq -r '.bool // empty')
+      [[ $NS == true && $DWT == false ]] && break
+    done
     if [[ $NS == true && $DWT == false ]]; then
       ok "input.lua touchpad settings active (effect-verified)"
     else
