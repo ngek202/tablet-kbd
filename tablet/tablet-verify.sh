@@ -12,9 +12,13 @@ pass() { echo "PASS: $1"; }
 fail() { echo "FAIL: $1"; FAIL=1; }
 
 grep_q() { grep -qF "$1" "$2" 2>/dev/null; }
+# Active-line check: the string must appear on an UNCOMMENTED line
+# (stock Omarchy ships commented examples containing the same strings
+# — an unanchored grep false-greens on fresh machines, seen 2026-09-09).
+grep_active() { grep -qE "^[[:space:]]*([^#-]|o\.bind|require|hl\.config).*" <(grep -F "$1" "$2" 2>/dev/null); }
 
 # --- 1. Owned-lua markers (what refresh-hyprland overwrites) ---
-if grep_q 'require("hypr.tablet")' "$HYPR/hyprland.lua"; then
+if grep_active 'require("hypr.tablet")' "$HYPR/hyprland.lua"; then
   pass "hyprland.lua requires hypr.tablet"
 else
   fail "hyprland.lua missing require(\"hypr.tablet\")"
@@ -26,15 +30,15 @@ else
   fi
 fi
 
-if grep_q 'tablet-mode.sh toggle' "$HYPR/bindings.lua" && \
-   grep_q 'osk-toggle.sh' "$HYPR/bindings.lua"; then
+if grep_active 'tablet-mode.sh toggle' "$HYPR/bindings.lua" && \
+   grep_active 'osk-toggle.sh' "$HYPR/bindings.lua"; then
   pass "bindings.lua tablet + OSK binds present"
 else
   fail "bindings.lua tablet/OSK binds missing (manual restore — semantics, not mechanical)"
 fi
 
-if grep_q 'natural_scroll = true' "$HYPR/input.lua" && \
-   grep_q 'disable_while_typing = false' "$HYPR/input.lua"; then
+if grep_active 'natural_scroll = true' "$HYPR/input.lua" && \
+   grep_active 'disable_while_typing = false' "$HYPR/input.lua"; then
   pass "input.lua touchpad settings present"
 else
   fail "input.lua touchpad settings missing (manual restore)"

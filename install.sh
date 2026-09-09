@@ -131,7 +131,7 @@ fi
 
 # --- 3. Owned-file wiring (additive-only, idempotent) ---
 say "owned wiring"
-if grep -qF 'require("hypr.tablet")' "$HYPR/hyprland.lua"; then
+if grep -qE '^[[:space:]]*require\("hypr\.tablet"\)' "$HYPR/hyprland.lua"; then
   skip "hyprland.lua require present"
 else
   bak "$HYPR/hyprland.lua"
@@ -140,7 +140,7 @@ else
     || { echo "FATAL: hyprland.lua broke syntax check — restore the .bak"; exit 1; }
 fi
 
-if grep -qF 'tablet-mode.sh toggle' "$HYPR/bindings.lua"; then
+if grep -qE '^[[:space:]]*o\.bind.*tablet-mode\.sh toggle' "$HYPR/bindings.lua"; then
   skip "bindings.lua tablet binds present"
 else
   bak "$HYPR/bindings.lua"
@@ -155,8 +155,8 @@ EOF
     || { echo "FATAL: bindings.lua broke syntax check — restore the .bak"; exit 1; }
 fi
 
-if grep -qF 'natural_scroll = true' "$HYPR/input.lua" && \
-   grep -qF 'disable_while_typing = false' "$HYPR/input.lua"; then
+if grep -qE '^[[:space:]]*natural_scroll = true' "$HYPR/input.lua" && \
+   grep -qE '^[[:space:]]*disable_while_typing = false' "$HYPR/input.lua"; then
   skip "input.lua touchpad settings active"
 else
   bak "$HYPR/input.lua"
