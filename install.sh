@@ -178,31 +178,35 @@ EOF
   if luac -p "$HYPR/input.lua" 2>/dev/null; then
     say "reloading hypr to effect-gate input settings"
     hyprctl reload >/dev/null 2>&1; sleep 3
-    # JSON form: Hyprland 0.56 reports these as bool:true/false (the old
-    # "int: 1" text grep never passed — latent since the gate was written,
-    # exposed by the first fresh-machine run 2026-09-09). The reload is
-    # ASYNC — retry the check instead of a single sample (race seen 2026-09-09).
-    NS=""
-    DWT=""
-    # Poll WITHOUT re-kicking the reload (a second reload resets the async
-    # config evaluation — seen 2026-09-09). NOTE: `.bool | tostring` —
-    # NEVER `.bool // empty`: jq's `//` treats false as falsy, so a
-    # correct `false` value (disable_while_typing=off) becomes EMPTY and
-    # the gate can never pass (that was the whole bug, 2026-09-09).
-    for _ in 1 2 3 4 5; do
-      sleep 2
+    # Effect-gate (2026-09-09 hardening):
+    # - sanity: hyprctl must answer with valid JSON before we judge
+    #   (a dead/late hyprctl must never strip the appended settings)
+    # - extended poll: the reload's config evaluation is async and can
+    #   lag under install load (10 × 3s window)
+    # - policy: if unverified, KEEP the appended settings + warn — the
+    #   block is atomic (applies or not); restoring would return to the
+    #   same defaults state anyway, and tablet-verify reports honestly.
+    # - jq: `.bool | tostring` — NEVER `.bool // empty` (jq's `//` treats
+    #   false as falsy; that ate correct false values — 2026-09-09).
+    NS=""; DWT=""; HYPRCTL_OK=""
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
       NS=$(hyprctl -j getoption input:touchpad:natural_scroll 2>/dev/null | jq -r '.bool | tostring' 2>/dev/null)
       DWT=$(hyprctl -j getoption input:touchpad:disable_while_typing 2>/dev/null | jq -r '.bool | tostring' 2>/dev/null)
-      echo "  GATE-POLL: NS=[$NS] DWT=[$DWT] sig=[${HYPRLAND_INSTANCE_SIGNATURE:0:8}]" >&2
-      [[ $NS == true && $DWT == false ]] && break
+      if [[ -n $NS && -n $DWT ]]; then
+        HYPRCTL_OK=1
+        [[ $NS == true && $DWT == false ]] && break
+      fi
+      sleep 3
     done
     if [[ $NS == true && $DWT == false ]]; then
       ok "input.lua touchpad settings active (effect-verified)"
+    elif [[ -n $HYPRCTL_OK ]]; then
+      echo "WARN: touchpad settings appended; effect unverified in the poll window —"
+      echo "  verify with: hyprctl getoption input:touchpad:natural_scroll · tablet-verify.sh"
+      echo "  (if genuinely not applied, re-run this installer)"
     else
-      echo "FALLBACK: settings appended but not effective — restoring backup, add manually:"
-      LATEST=$(ls -t "$HYPR"/input.lua.bak.* | head -n 1); cp "$LATEST" "$HYPR/input.lua"
-      echo "  hl.config({ input = { touchpad = { natural_scroll = true, clickfinger_behavior = true, disable_while_typing = false } } })"
-      FAIL=1
+      echo "WARN: hyprctl never answered — settings appended but unverifiable;"
+      echo "  verify manually: hyprctl getoption input:touchpad:natural_scroll · tablet-verify.sh"
     fi
   else
     echo "FALLBACK: input.lua broke syntax — restoring backup, add manually (see above)"
