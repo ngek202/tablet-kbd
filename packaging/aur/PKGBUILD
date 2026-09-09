@@ -84,4 +84,11 @@ package() {
     'exec /usr/share/tablet-kbd/tablet/tablet-verify.sh "$@"' \
     > "${pkgdir}/usr/bin/tablet-kbd-verify"
   chmod 755 "${pkgdir}/usr/bin/tablet-kbd-verify"
+
+  printf '%s\n' '#!/bin/bash' \
+    '# tablet-kbd-uninstall — remove the per-user tablet-kbd setup' \
+    '# (units, files, wiring — backed up). Run as your own user.' \
+    'exec /usr/share/tablet-kbd/tablet/tablet-kbd-uninstall.sh "$@"' \
+    > "${pkgdir}/usr/bin/tablet-kbd-uninstall"
+  chmod 755 "${pkgdir}/usr/bin/tablet-kbd-uninstall"
 }
