@@ -193,6 +193,7 @@ EOF
       sleep 2
       NS=$(hyprctl -j getoption input:touchpad:natural_scroll 2>/dev/null | jq -r '.bool | tostring' 2>/dev/null)
       DWT=$(hyprctl -j getoption input:touchpad:disable_while_typing 2>/dev/null | jq -r '.bool | tostring' 2>/dev/null)
+      echo "  GATE-POLL: NS=[$NS] DWT=[$DWT] sig=[${HYPRLAND_INSTANCE_SIGNATURE:0:8}]" >&2
       [[ $NS == true && $DWT == false ]] && break
     done
     if [[ $NS == true && $DWT == false ]]; then
