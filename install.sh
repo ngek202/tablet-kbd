@@ -223,9 +223,44 @@ fi
 if [[ $REPO == /usr/share/tablet-kbd ]]; then
   echo "install.sh: ALL GREEN — (AUR package: re-run 'tablet-kbd-install' anytime; verify with 'tablet-kbd-verify')"
 else
-  echo "install.sh: ALL GREEN — install with:"
-  echo "  git clone https://github.com/ngek202/tablet-kbd.git && ./tablet-kbd/install.sh"
+echo "install.sh: ALL GREEN — install with:"
+echo "  git clone https://github.com/ngek202/tablet-kbd.git && ./tablet-kbd/install.sh"
 fi
+
+# ── Usage guide window ──────────────────────────
+# A dedicated floating pop-up that stays open until the user closes it
+# with SUPER+W — no keypress auto-close (users reflexively key-past
+# "press any key" prompts and forget the usage, seen 2026-09-09).
+# Content lives in a private state file, regenerated each install; the
+# window is deduped (re-installs replace it).
+USAGE_TXT="$HOME/.local/state/tablet-kbd/USAGE.txt"
+mkdir -p "$(dirname "$USAGE_TXT")" && chmod 700 "$(dirname "$USAGE_TXT")" 2>/dev/null
+cat > "$USAGE_TXT" <<'EOF'
+── SAM OSK — tablet stack quick usage ───────────
+
+  Keyboard (SAM OSK)     SUPER+B
+  Tablet mode on/off     SUPER+SHIFT+T
+  Switch window (touch)  Double-tap a window (cursor warps + focuses)
+  Workspace (page)       3-finger swipe left/right
+  Exit tablet mode       3-finger inward from left/right edge
+  Summon keyboard        Swipe up from bottom edge · 3-finger up
+  Pen palm-rejection     SUPER+SHIFT+P (finger off, pen works) · re-run to restore
+  Fallback keyboard      OSK_BACKEND=squeekboard / wvkbd (install one first)
+  Finger touch off/on    touch-toggle.sh off · on
+
+  Health check           tablet-verify.sh (or the widget right-click)
+  Full guide             github.com/ngek202/tablet-kbd#usage
+
+  This window stays open. Close it with SUPER+W.
+EOF
+chmod 600 "$USAGE_TXT"
+# Dedupe: replace any previous usage window (always exactly one).
+pkill -f "title=SAM OSK Usage" 2>/dev/null || true
+# Ensure the float/center/size windowrule (added in tablet.lua) is active.
+hyprctl reload >/dev/null 2>&1 || true
+sleep 0.5
+setsid foot --title="SAM OSK Usage" -e bash -c 'cat "$0"; sleep infinity' "$USAGE_TXT" >/dev/null 2>&1 &
+echo "Usage guide opened in a floating window (close with SUPER+W)."
 
 echo
 echo "── Quick usage ──────────────────────────────────"

@@ -63,3 +63,10 @@ o.window({ title = "tablet-exit" }, { float = true, no_focus = true, no_initial_
 
 -- SAM OSK never steals focus (title pairs with custom-kbd.py TITLE).
 o.window({ title = "SAM OSK" }, { float = true, no_focus = true, no_initial_focus = true })
+
+-- Usage guide pop-up (install.sh): floats, sized 700x400 — stays open
+-- until the user closes it (SUPER+W). Deliberately NOT no_focus: it
+-- launches focused so SUPER+W targets it immediately. Centering is done
+-- by install.sh (movewindowpixel) — the Lua windowrule API has no
+-- center prop (verified 2026-09-09).
+o.window({ title = "SAM OSK Usage" }, { float = true, size = "700 400" })
