@@ -177,9 +177,13 @@ hl.config({
 EOF
   if luac -p "$HYPR/input.lua" 2>/dev/null; then
     say "reloading hypr to effect-gate input settings"
-    hyprctl reload >/dev/null 2>&1; sleep 2
-    if hyprctl getoption input:touchpad:natural_scroll 2>/dev/null | grep -q "int: 1" && \
-       hyprctl getoption input:touchpad:disable_while_typing 2>/dev/null | grep -q "int: 0"; then
+    hyprctl reload >/dev/null 2>&1; sleep 3
+    # JSON form: Hyprland 0.56 reports these as bool:true/false (the old
+    # "int: 1" text grep never passed — latent since the gate was written,
+    # exposed by the first fresh-machine run 2026-09-09).
+    NS=$(hyprctl -j getoption input:touchpad:natural_scroll 2>/dev/null | jq -r '.bool // empty')
+    DWT=$(hyprctl -j getoption input:touchpad:disable_while_typing 2>/dev/null | jq -r '.bool // empty')
+    if [[ $NS == true && $DWT == false ]]; then
       ok "input.lua touchpad settings active (effect-verified)"
     else
       echo "FALLBACK: settings appended but not effective — restoring backup, add manually:"
