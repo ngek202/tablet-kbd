@@ -236,22 +236,24 @@ fi
 USAGE_TXT="$HOME/.local/state/tablet-kbd/USAGE.txt"
 mkdir -p "$(dirname "$USAGE_TXT")" && chmod 700 "$(dirname "$USAGE_TXT")" 2>/dev/null
 cat > "$USAGE_TXT" <<'EOF'
-── SAM OSK — tablet stack quick usage ───────────
+Tablet Mode OFF (laptop) — Usage:
+  Open SAM OSK (on-screen keyboard)   SUPER+B
+  Enter Tablet Mode                   SUPER+SHIFT+T · or tap the bar widget
+  Write with a pen (finger pauses)    SUPER+SHIFT+P · tap again to restore
+  Try a different keyboard app        OSK_BACKEND=squeekboard / wvkbd
+                                      (install one first — Omarchy ships none)
 
-  Keyboard (SAM OSK)     SUPER+B
-  Tablet mode on/off     SUPER+SHIFT+T
-  Switch window (touch)  Double-tap a window (cursor warps + focuses)
-  Workspace (page)       3-finger swipe left/right
-  Exit tablet mode       3-finger inward from left/right edge
-  Summon keyboard        Swipe up from bottom edge · 3-finger up
-  Pen palm-rejection     SUPER+SHIFT+P (finger off, pen works) · re-run to restore
-  Fallback keyboard      OSK_BACKEND=squeekboard / wvkbd (install one first)
-  Finger touch off/on    touch-toggle.sh off · on
+Tablet Mode ON (touch) — Usage:
+  Close Tablet Mode                   3-finger swipe inward from the
+                                      left or right edge
+  Open SAM OSK (on-screen keyboard)   swipe up from the bottom edge
+                                      · 3-finger up · tap the bar widget
+  Switch windows (touch)              double-tap a window — the cursor
+                                      jumps there and it gains focus
+  Move between workspaces             3-finger swipe left / right
 
-  Health check           tablet-verify.sh (or the widget right-click)
-  Full guide             github.com/ngek202/tablet-kbd#usage
-
-  This window stays open. Close it with SUPER+W.
+Full guide: github.com/ngek202/tablet-kbd#usage
+This window stays open — close it with SUPER+W.
 EOF
 chmod 600 "$USAGE_TXT"
 # Dedupe: replace any previous usage window (always exactly one).

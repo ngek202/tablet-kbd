@@ -70,16 +70,22 @@ ships none — SAM OSK becomes your first.
 
 ## Usage
 
-| Action | How |
-|---|---|
-| **SAM OSK** | `SUPER+B` · or tap the bar widget |
-| **Tablet mode** | `SUPER+SHIFT+T` · or the bar widget |
-| **Exit tablet mode** | 3-finger swipe inward from **left or right** edge · 4-finger left-edge · `SUPER+SHIFT+T` (keyboard live) |
-| **Scroll pages** | 3-finger swipe left/right = switch to the previous/next workspace (window-page in scrolling layout) — anywhere, any mode |
-| **Switch window** | Double-tap a window (touch) — cursor warps + window focuses |
-| **Summon SAM OSK** | Swipe up from bottom edge · 3-finger up |
-| **Pen palm-rejection** | `touch-toggle.sh off` (finger off, pen works) · `on` restores |
-| **Fallback keyboard** | `OSK_BACKEND=squeekboard` / `wvkbd` — install one first (Omarchy ships none) |
+**Tablet Mode OFF (laptop) — Usage:**
+
+- Open SAM OSK (on-screen keyboard): `SUPER+B`
+- Enter Tablet Mode: `SUPER+SHIFT+T` · or tap the bar widget
+- Write with a pen (finger pauses): `SUPER+SHIFT+P` · tap again to restore
+- Try a different keyboard app: `OSK_BACKEND=squeekboard` / `wvkbd`
+  (install one first — Omarchy ships none)
+
+**Tablet Mode ON (touch) — Usage:**
+
+- Close Tablet Mode: 3-finger swipe inward from the **left or right edge**
+- Open SAM OSK (on-screen keyboard): swipe up from the **bottom edge**
+  · 3-finger up · tap the bar widget
+- Switch windows (touch): **double-tap a window** — the cursor jumps
+  there and it gains focus
+- Move between workspaces: 3-finger swipe left / right
 
 Entering tablet mode: internal keyboard + touchpad off, auto-rotate on,
 gestures orientation-aware, touch cursor active.
