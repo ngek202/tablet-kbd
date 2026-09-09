@@ -16,8 +16,8 @@ fold the laptop, get a touch-first desktop.
 - **Tablet mode** — internal keyboard + touchpad off, auto-rotate via
   accelerometer, orientation-aware gestures, double-tap cursor warp +
   window focus
-- **Page scrolling** — 3-finger swipes navigate scrolling-layout
-  window-pages in any mode
+- **Page scrolling** — 3-finger swipes switch workspaces (scrolling-layout
+  pages) in any mode
 - **Self-healing** — device auto-detection (override file for odd
   hardware), health check with interactive repair, post-update
   protection hook
@@ -75,7 +75,8 @@ ships none — SAM OSK becomes your first.
 | **SAM OSK** | `SUPER+B` · or tap the bar widget |
 | **Tablet mode** | `SUPER+SHIFT+T` · or the bar widget |
 | **Exit tablet mode** | 3-finger swipe inward from **left or right** edge · 4-finger left-edge · `SUPER+SHIFT+T` (keyboard live) |
-| **Scroll pages** | 3-finger swipe left/right — anywhere, any mode |
+| **Scroll pages** | 3-finger swipe left/right = switch to the previous/next workspace (window-page in scrolling layout) — anywhere, any mode |
+| **Switch window** | Double-tap a window (touch) — cursor warps + window focuses |
 | **Summon SAM OSK** | Swipe up from bottom edge · 3-finger up |
 | **Pen palm-rejection** | `touch-toggle.sh off` (finger off, pen works) · `on` restores |
 | **Fallback keyboard** | `OSK_BACKEND=squeekboard` / `wvkbd` — install one first (Omarchy ships none) |
