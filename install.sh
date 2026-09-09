@@ -184,12 +184,15 @@ EOF
     # ASYNC — retry the check instead of a single sample (race seen 2026-09-09).
     NS=""
     DWT=""
-    # Poll WITHOUT re-kicking the reload: a second reload resets the
-    # async config evaluation and starves it (seen 2026-09-09).
+    # Poll WITHOUT re-kicking the reload (a second reload resets the async
+    # config evaluation — seen 2026-09-09). NOTE: `.bool | tostring` —
+    # NEVER `.bool // empty`: jq's `//` treats false as falsy, so a
+    # correct `false` value (disable_while_typing=off) becomes EMPTY and
+    # the gate can never pass (that was the whole bug, 2026-09-09).
     for _ in 1 2 3 4 5; do
       sleep 2
-      NS=$(hyprctl -j getoption input:touchpad:natural_scroll 2>/dev/null | jq -r '.bool // empty')
-      DWT=$(hyprctl -j getoption input:touchpad:disable_while_typing 2>/dev/null | jq -r '.bool // empty')
+      NS=$(hyprctl -j getoption input:touchpad:natural_scroll 2>/dev/null | jq -r '.bool | tostring' 2>/dev/null)
+      DWT=$(hyprctl -j getoption input:touchpad:disable_while_typing 2>/dev/null | jq -r '.bool | tostring' 2>/dev/null)
       [[ $NS == true && $DWT == false ]] && break
     done
     if [[ $NS == true && $DWT == false ]]; then
