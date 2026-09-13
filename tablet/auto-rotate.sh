@@ -14,6 +14,14 @@ source "$(dirname "${BASH_SOURCE[0]}")/tablet-devices.sh"
 MONITOR="$TABLET_OUTPUT"
 FINGER="$TABLET_FINGER"
 LOG="$HOME/.local/state/omarchy/auto-rotate.log"
+# Private per-user log, no-follow: a planted symlink at the path or a
+# non-regular file must never redirect appends (marketplace security
+# review rule, applied 2026-09-11). Owner-checked, 700 dir.
+mkdir -p "$(dirname "$LOG")" 2>/dev/null || true
+chmod 700 "$(dirname "$LOG")" 2>/dev/null || true
+if [[ -L "$LOG" ]] || { [[ -e "$LOG" ]] && [[ ! -f "$LOG" ]]; }; then
+  rm -f "$LOG" 2>/dev/null || true
+fi
 
 resolve_sig() {
   [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]] && return 0

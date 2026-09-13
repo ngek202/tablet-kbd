@@ -250,9 +250,27 @@ fi
 # "press any key" prompts and forget the usage, seen 2026-09-09).
 # Content lives in a private state file, regenerated each install; the
 # window is deduped (re-installs replace it).
-USAGE_TXT="$HOME/.local/state/tablet-kbd/USAGE.txt"
-mkdir -p "$(dirname "$USAGE_TXT")" && chmod 700 "$(dirname "$USAGE_TXT")" 2>/dev/null
-cat > "$USAGE_TXT" <<'EOF'
+# Private per-user state dir. Owner-checked + symlink-resistant: a planted
+# symlink at the dir or file must never redirect this write (marketplace
+# security review 2026-09-11). Atomic via temp-then-rename.
+USAGE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/tablet-kbd"
+mkdir -p "$USAGE_DIR" 2>/dev/null || true
+if [[ -L "$USAGE_DIR" ]]; then
+  echo "WARN: $USAGE_DIR is a symlink — refusing to write the usage guide there"
+  USAGE_TXT=""
+else
+  chmod 700 "$USAGE_DIR" 2>/dev/null || true
+  USAGE_TXT="$USAGE_DIR/USAGE.txt"
+fi
+if [[ -n $USAGE_TXT ]]; then
+  TMP_USAGE="$(mktemp "$USAGE_DIR/.usage.XXXXXX" 2>/dev/null)"
+  if [[ -z $TMP_USAGE || ! -w $TMP_USAGE ]]; then
+    echo "WARN: cannot create the usage guide in $USAGE_DIR — skipping the pop-up"
+    USAGE_TXT=""
+  fi
+fi
+if [[ -n $USAGE_TXT && -n ${TMP_USAGE:-} ]]; then
+cat > "$TMP_USAGE" <<'EOF'
 Tablet Mode OFF (laptop) — Usage:
   Open SAM OSK (on-screen keyboard)   SUPER+B
   Enter Tablet Mode                   SUPER+SHIFT+T · or tap the bar widget
@@ -272,14 +290,22 @@ Tablet Mode ON (touch) — Usage:
 Full guide: github.com/ngek202/tablet-kbd#usage
 This window stays open — close it with SUPER+W.
 EOF
-chmod 600 "$USAGE_TXT"
-# Dedupe: replace any previous usage window (always exactly one).
-pkill -f "title=SAM OSK Usage" 2>/dev/null || true
-# Ensure the float/center/size windowrule (added in tablet.lua) is active.
-hyprctl reload >/dev/null 2>&1 || true
-sleep 0.5
-setsid foot --title="SAM OSK Usage" -e bash -c 'cat "$0"; sleep infinity' "$USAGE_TXT" >/dev/null 2>&1 &
-echo "Usage guide opened in a floating window (close with SUPER+W)."
+  chmod 600 "$TMP_USAGE"
+  # Atomic replace: rename over the target — replaces a planted symlink
+  # rather than following it (no-follow by construction, 2026-09-11).
+  mv -f "$TMP_USAGE" "$USAGE_TXT"
+fi
+if [[ -n $USAGE_TXT ]]; then
+  # Dedupe: replace any previous usage window (always exactly one).
+  pkill -f "title=SAM OSK Usage" 2>/dev/null || true
+  # Ensure the float/center/size windowrule (added in tablet.lua) is active.
+  hyprctl reload >/dev/null 2>&1 || true
+  sleep 0.5
+  setsid foot --title="SAM OSK Usage" -e bash -c 'cat "$0"; sleep infinity' "$USAGE_TXT" >/dev/null 2>&1 &
+  echo "Usage guide opened in a floating window (close with SUPER+W)."
+else
+  echo "WARN: usage-guide pop-up skipped (see warnings above)."
+fi
 
 echo
 echo "── Quick usage ──────────────────────────────────"
